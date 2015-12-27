@@ -1,0 +1,11 @@
+{
+  "Appender": [
+    "File"
+  ],
+  "File": {
+    "Level": "INFO",
+    "FileName": "./messages.log",
+    "ShortFile": "True",
+    "FileSize": 100
+  }
+}

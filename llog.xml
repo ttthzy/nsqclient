@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+	<Appender>File</Appender>
+	<File>
+		<Level>INFO</Level>
+		<FileName>messages.log</FileName> <!-- 日志文件路径及名称 -->
+		<ShortFile>true</ShortFile>
+		<FileSize>100</FileSize>			<!-- 单位 Mb -->
+	</File>
+</Config>
