@@ -8,14 +8,16 @@
   <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
   <script charset="utf-8">
     function sendMsg() {
-      var msg=$("#iptCon").val();
+      var msg = $("#iptCon").val();
       $.ajax({
         url: "http://nsq-ttthzygi35.tenxcloud.net:20157/put?topic=test",
         type: 'POST',
         data: msg,
         success: function(data) {
-          alert("消息推送完毕！");
-        }
+        },
+        error : function(data) {
+            alert("消息推送完毕！");
+        },
       });
     }
 
