@@ -1,18 +1,20 @@
 package lib
 
 import (
-	"fmt"
-	"github.com/lvanneo/llog/llogger"
-	"github.com/nsqio/go-nsq"
-	"time"
+	"nsqclient/lib/mongodb"
+	"nsqclient/models"
 )
+import (
+	"fmt"
+	"time"
 
-var NsqLock bool
+	"github.com/nsqio/go-nsq"
+)
 
 type Handle struct {
 	msgchan chan *nsq.Message
 	stop    bool
-	nci     NsqConnInfo
+	nci     models.NsqConnInfo
 }
 
 func (h *Handle) HandleMsg(m *nsq.Message) error {
@@ -27,7 +29,9 @@ func (h *Handle) Process() {
 	for {
 		select {
 		case m := <-h.msgchan:
-			ReceiveMessage(string(m.Body), h.nci)
+			//fmt.Println(string(m.Body))
+			h.nci.Message = string(m.Body)
+			ReceiveMessage(h.nci)
 		case <-time.After(time.Second):
 			if h.stop {
 				close(h.msgchan)
@@ -43,49 +47,41 @@ func (h *Handle) Stop() {
 
 }
 
-func Connect_Nsq(nci NsqConnInfo) {
-	NsqLock = false
+func Connect_Nsq(constr string, nci models.NsqConnInfo) {
 	config := nsq.NewConfig()
 	config.ClientID = nci.UserID
 	consumer, err := nsq.NewConsumer(nci.Topic, nci.Channel, config)
 	if err != nil {
-		//panic(err)
-		fmt.Println(err.Error())
+		panic(err)
 		return
 	}
 	h := new(Handle)
 	consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
 	h.msgchan = make(chan *nsq.Message, 1024)
-	err = consumer.ConnectToNSQD("nsq-ttthzygi35.tenxcloud.net:40255")
+	err = consumer.ConnectToNSQD(constr)
 	if err != nil {
 		//这里需要加一个循环计次的逻辑处理，？次以后不再尝试连接。
 		fmt.Println("连接服务器失败，尝试再次连接中...")
-		Connect_Nsq(nci)
+		Connect_Nsq(constr, nci)
 	}
 	h.nci = nci
-	go h.Stopcmd()
 	h.Process()
 
 }
 
-func (h *Handle) Stopcmd() {
-	for {
-		if NsqLock {
-			h.stop = true
-			close(h.msgchan)
-			fmt.Println("与服务器的连接已经关闭了")
-		}
-	}
-}
-
-func Cmdstp() {
-	NsqLock = true
-	fmt.Println("正在尝试关闭与服务器的连接通道")
-}
-
 ///接收channel消息并处理
-func ReceiveMessage(msg string, nci NsqConnInfo) {
-	message := "jsondata={Topic:" + nci.Topic + ",Channel:" + nci.Channel + ",UserID:" + nci.UserID + ",Message:" + msg + "}"
-	llogger.Info(message)
-	fmt.Println(msg)
+func ReceiveMessage(nci models.NsqConnInfo) {
+	//message := "jsondata={Topic:" + nci.Topic + ",Channel:" + nci.Channel + ",UserID:" + nci.UserID + ",Message:" + nci.Message + "}"
+	//llogger.Info(message)
+
+	msg := models.Messages{
+		Topic:   nci.Topic,
+		Channel: nci.Channel,
+		UserID:  nci.UserID,
+		Message: nci.Message,
+	}
+
+	ret := lib.AddMessages(msg)
+
+	fmt.Println("ID：" + ret + " Message：" + nci.Message)
 }

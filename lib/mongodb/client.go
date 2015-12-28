@@ -1,17 +1,13 @@
 package lib
 
 import (
+	"nsqclient/models"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-type Person struct {
-	Id    bson.ObjectId `bson:"_id"`
-	Name  string        `bson:"tname"` //bson:"name" 表示mongodb数据库中对应的字段名称
-	Phone string        `bson:"tphone"`
-}
-
-const URL = "127.0.0.1:27017" //mongodb连接字符串
+const URL = "mongodb://admin:H2Xv6cznmCm2@mongodb-ttthzygi35.tenxcloud.net:44329" //mongodb连接字符串
 
 var (
 	mgoSession *mgo.Session
@@ -42,56 +38,56 @@ func witchCollection(collection string, s func(*mgo.Collection) error) error {
 }
 
 /**
- * 添加person对象
+ * 添加Messages对象
  */
-func AddPerson(p Person) string {
+func AddMessages(p models.Messages) string {
 	p.Id = bson.NewObjectId()
 	query := func(c *mgo.Collection) error {
 		return c.Insert(p)
 	}
-	err := witchCollection("person", query)
+	err := witchCollection("Messages", query)
 	if err != nil {
 		return "false"
 	}
 	return p.Id.Hex()
 }
 
-/**
- * 获取一条记录通过objectid
- */
-func GetPersonById(id string) *Person {
-	objid := bson.ObjectIdHex(id)
-	person := new(Person)
-	query := func(c *mgo.Collection) error {
-		return c.FindId(objid).One(&person)
-	}
-	witchCollection("person", query)
-	return person
-}
-
-//获取所有的person数据
-func PagePerson() []Person {
-	var persons []Person
-	query := func(c *mgo.Collection) error {
-		return c.Find(nil).All(&persons)
-	}
-	err := witchCollection("person", query)
-	if err != nil {
-		return persons
-	}
-	return persons
-}
-
-//更新person数据
-func UpdatePerson(query bson.M, change bson.M) string {
+//更新Messages数据
+func UpdateMessages(query bson.M, change bson.M) string {
 	exop := func(c *mgo.Collection) error {
 		return c.Update(query, change)
 	}
-	err := witchCollection("person", exop)
+	err := witchCollection("Messages", exop)
 	if err != nil {
 		return "true"
 	}
 	return "false"
+}
+
+//获取所有的person数据
+func PageMessages() []models.Messages {
+	var list []models.Messages
+	query := func(c *mgo.Collection) error {
+		return c.Find(nil).All(&list)
+	}
+	err := witchCollection("Messages", query)
+	if err != nil {
+		return list
+	}
+	return list
+}
+
+/**
+ * 获取一条记录通过objectid
+ */
+func GetMessagesById(id string) *models.Messages {
+	objid := bson.ObjectIdHex(id)
+	item := new(models.Messages)
+	query := func(c *mgo.Collection) error {
+		return c.FindId(objid).One(&item)
+	}
+	witchCollection("Messages", query)
+	return item
 }
 
 /**

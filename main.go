@@ -1,6 +1,7 @@
 package main
 
 import "nsqclient/lib/nsq"
+import "nsqclient/models"
 import "nsqclient/controller"
 import (
 	"bufio"
@@ -10,6 +11,9 @@ import (
 )
 
 func main() {
+	// StartNsq()
+	// return
+
 	running := true
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("请输入指令：\n")
@@ -32,16 +36,18 @@ func main() {
 
 ///启动nsq客户端连接
 func StartNsq() {
-	nci := lib.NsqConnInfo{
+	nci := models.NsqConnInfo{
 		Topic:   "test",
 		Channel: "eason",
 		UserID:  "00001",
 	}
-	lib.Connect_Nsq(nci)
+	constr := "nsq-ttthzygi35.tenxcloud.net:40255"
+	lib.Connect_Nsq(constr, nci)
 }
 
 ///启动http服务器
 func StartHttpServer() {
+	fmt.Printf("HttpServer Run...\n")
 	http.Handle("/css/", http.FileServer(http.Dir("template")))
 	http.Handle("/js/", http.FileServer(http.Dir("template")))
 
@@ -51,5 +57,4 @@ func StartHttpServer() {
 	http.HandleFunc("/", controller.NotFoundHandler)
 	http.ListenAndServe(":8080", nil)
 
-	fmt.Printf("HttpServer Run...\n")
 }
