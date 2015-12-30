@@ -1,6 +1,6 @@
 package main
 
-import "nsqclient/lib/nsq"
+import "nsqclient/lib"
 import "nsqclient/models"
 import "nsqclient/controller"
 import (
@@ -11,8 +11,9 @@ import (
 )
 
 func main() {
-	// StartNsq()
-	// return
+	//StartNsq()
+	//StartHttpServer()
+	//return
 
 	running := true
 	reader := bufio.NewReader(os.Stdin)
@@ -30,31 +31,38 @@ func main() {
 		default:
 			fmt.Printf("错误指令，请重新输入：\n")
 		}
-
 	}
 }
 
-///启动nsq客户端连接
+///nsq客户端服务
 func StartNsq() {
-	nci := models.NsqConnInfo{
+	nci := models.Messages{
 		Topic:   "test",
-		Channel: "eason",
+		Channel: "Eason",
 		UserID:  "00001",
 	}
 	constr := "nsq-ttthzygi35.tenxcloud.net:40255"
 	lib.Connect_Nsq(constr, nci)
 }
 
-///启动http服务器
+///http服务器
 func StartHttpServer() {
 	fmt.Printf("HttpServer Run...\n")
+
+	//静态目录
 	http.Handle("/css/", http.FileServer(http.Dir("template")))
 	http.Handle("/js/", http.FileServer(http.Dir("template")))
 
+	//页面路由
 	http.HandleFunc("/index.html", controller.IndexHandler)
 	http.HandleFunc("/home.html", controller.HomeHandler)
-	http.HandleFunc("/getnsq/", controller.GetNsqHandler)
 	http.HandleFunc("/", controller.NotFoundHandler)
+
+	///API接口路由
+	http.HandleFunc("/SendMsg/", controller.GetNsqHandler)
+	http.HandleFunc("/ReceiveMsg/", controller.GetMsgHandler)
+
+	///启动监听服务
 	http.ListenAndServe(":8080", nil)
 
 }
