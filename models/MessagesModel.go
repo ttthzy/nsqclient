@@ -57,12 +57,12 @@ func PageMessages() []Messages {
 }
 
 //根据指定字段查询Messages数据
-func GetMessagesForField(fieldname string, fieldvalue string) []Messages {
+func GetMessagesForField(fieldname string, fieldvalue string, limit int) []Messages {
 	var list []Messages
 	qstr := bson.M{fieldname: fieldvalue}
 	//sort := bson.M{"senddate": "-1"}
 	query := func(c *mgo.Collection) error {
-		return c.Find(qstr).Sort("-senddate").Limit(1).All(&list)
+		return c.Find(qstr).Sort("-senddate").Limit(limit).All(&list)
 	}
 	err := WitchCollection("Messages", query)
 	if err != nil {

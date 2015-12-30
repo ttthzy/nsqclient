@@ -1,13 +1,17 @@
 package main
 
-import "nsqclient/lib"
-import "nsqclient/models"
-import "nsqclient/controller"
+import (
+	"nsqclient/controller"
+	"nsqclient/lib"
+	"nsqclient/models"
+)
 import (
 	"bufio"
 	"fmt"
 	"net/http"
 	"os"
+    "net"
+    "golang.org/x/net/netutil"
 )
 
 func main() {
@@ -22,10 +26,10 @@ func main() {
 		data, _, _ := reader.ReadLine()
 		///执行自定义的cmd命令
 		switch command := string(data); command {
-		case "start nsq":
+		case "nsq":
 			StartNsq()
 			running = false
-		case "start httpserver":
+		case "http":
 			StartHttpServer()
 			running = false
 		default:
@@ -62,7 +66,15 @@ func StartHttpServer() {
 	http.HandleFunc("/SendMsg/", controller.GetNsqHandler)
 	http.HandleFunc("/ReceiveMsg/", controller.GetMsgHandler)
 
+    //http.ListenAndServe(":8080", nil)
 	///启动监听服务
-	http.ListenAndServe(":8080", nil)
+	l, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		fmt.Printf("Listen: %v", err)
+	}
+	defer l.Close()
+	l = netutil.LimitListener(l, 1000000) //最大连接数
 
+	http.Serve(l, nil)
+	
 }
