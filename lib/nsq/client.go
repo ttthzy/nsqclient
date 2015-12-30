@@ -1,9 +1,7 @@
 package lib
 
-import (
-	"nsqclient/lib/mongodb"
-	"nsqclient/models"
-)
+import "nsqclient/models"
+
 import (
 	"fmt"
 	"time"
@@ -81,7 +79,7 @@ func ReceiveMessage(nci models.NsqConnInfo) {
 		Message: nci.Message,
 	}
 
-	ret := lib.AddMessages(msg)
+	ret := models.AddMessages(msg)
 
 	fmt.Println("ID：" + ret + " Message：" + nci.Message)
 }

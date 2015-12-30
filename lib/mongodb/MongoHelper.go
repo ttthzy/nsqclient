@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"nsqclient/models"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,7 +15,7 @@ var (
 /**
  * 公共方法，获取session，如果存在则拷贝一份
  */
-func getSession() *mgo.Session {
+func GetSession() *mgo.Session {
 	if mgoSession == nil {
 		var err error
 		mgoSession, err = mgo.Dial(URL)
@@ -30,64 +28,11 @@ func getSession() *mgo.Session {
 }
 
 //公共方法，获取collection对象
-func witchCollection(collection string, s func(*mgo.Collection) error) error {
-	session := getSession()
+func WitchCollection(collection string, s func(*mgo.Collection) error) error {
+	session := GetSession()
 	defer session.Close()
 	c := session.DB(dataBase).C(collection)
 	return s(c)
-}
-
-/**
- * 添加Messages对象
- */
-func AddMessages(p models.Messages) string {
-	p.Id = bson.NewObjectId()
-	query := func(c *mgo.Collection) error {
-		return c.Insert(p)
-	}
-	err := witchCollection("Messages", query)
-	if err != nil {
-		return "false"
-	}
-	return p.Id.Hex()
-}
-
-//更新Messages数据
-func UpdateMessages(query bson.M, change bson.M) string {
-	exop := func(c *mgo.Collection) error {
-		return c.Update(query, change)
-	}
-	err := witchCollection("Messages", exop)
-	if err != nil {
-		return "true"
-	}
-	return "false"
-}
-
-//获取所有的person数据
-func PageMessages() []models.Messages {
-	var list []models.Messages
-	query := func(c *mgo.Collection) error {
-		return c.Find(nil).All(&list)
-	}
-	err := witchCollection("Messages", query)
-	if err != nil {
-		return list
-	}
-	return list
-}
-
-/**
- * 获取一条记录通过objectid
- */
-func GetMessagesById(id string) *models.Messages {
-	objid := bson.ObjectIdHex(id)
-	item := new(models.Messages)
-	query := func(c *mgo.Collection) error {
-		return c.FindId(objid).One(&item)
-	}
-	witchCollection("Messages", query)
-	return item
 }
 
 /**
@@ -104,6 +49,6 @@ func SearchPerson(collectionName string, query bson.M, sort string, fields bson.
 	exop := func(c *mgo.Collection) error {
 		return c.Find(query).Sort(sort).Select(fields).Skip(skip).Limit(limit).All(&results)
 	}
-	err = witchCollection(collectionName, exop)
+	err = WitchCollection(collectionName, exop)
 	return
 }
