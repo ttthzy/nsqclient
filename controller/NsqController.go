@@ -11,6 +11,20 @@ import (
 	"strconv"
 )
 
+
+func StartNsqHandler(w http.ResponseWriter, req *http.Request) {
+    
+    
+    
+    
+    
+    
+}
+
+
+
+
+
 func GetNsqHandler(w http.ResponseWriter, req *http.Request) {
 	//获取客户端通过GET/POST方式传递的参数
 	req.ParseForm()
