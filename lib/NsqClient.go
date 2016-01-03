@@ -10,29 +10,35 @@ import (
 )
 
 type Handle struct {
-	msgchan chan *nsq.Message
-	stop    bool
-	nci     models.Messages
+	Msgchan    chan *nsq.Message
+	ChanSwitch bool
+	Nci        models.Messages
 }
 
+var RevMsg string
+var HH *Handle
+
 func (h *Handle) HandleMsg(m *nsq.Message) error {
-	if !h.stop {
-		h.msgchan <- m
+	if !h.ChanSwitch {
+		h.Msgchan <- m
 	}
 	return nil
 }
 
 func (h *Handle) Process() {
-	h.stop = false
+
+	h.ChanSwitch = false
+
 	for {
 		select {
-		case m := <-h.msgchan:
-			//fmt.Println(string(m.Body))
-			h.nci.Message = string(m.Body)
-			ReceiveMessage(h.nci)
+		case m := <-h.Msgchan:
+			h.Nci.Message = string(m.Body)
+			h.Nci.MessageID = string(m.ID[:])
+			h.ReceiveMessage()
 		case <-time.After(time.Second):
-			if h.stop {
-				close(h.msgchan)
+			if h.ChanSwitch {
+				close(h.Msgchan)
+				HH = nil
 				fmt.Println("关闭了")
 				return
 			}
@@ -41,38 +47,51 @@ func (h *Handle) Process() {
 }
 
 func (h *Handle) Stop() {
-	h.stop = true
+	h.ChanSwitch = true
+	close(h.Msgchan)
+	HH = nil
+}
 
+func (h *Handle) SetHH() {
+	HH = h
 }
 
 func Connect_Nsq(constr string, nci models.Messages) {
+
+	// if HH.Nci.ClientID != "" {
+	// 	return
+	// }
+
 	config := nsq.NewConfig()
-	config.ClientID = nci.UserID
+
 	consumer, err := nsq.NewConsumer(nci.Topic, nci.Channel, config)
 	if err != nil {
-		panic(err)
+		//panic(err)
 		return
 	}
 	h := new(Handle)
 	consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
-	h.msgchan = make(chan *nsq.Message, 1024)
+	h.Msgchan = make(chan *nsq.Message, 1024)
 	err = consumer.ConnectToNSQD(constr)
 	if err != nil {
+		return
 		//这里需要加一个循环计次的逻辑处理，？次以后不再尝试连接。
-		fmt.Println("连接服务器失败，尝试再次连接中...")
-		Connect_Nsq(constr, nci)
+		//fmt.Println("连接服务器失败，尝试再次连接中...")
+		//Connect_Nsq(constr, nci)
 	}
-	h.nci = nci
-	h.Process()
 
+	nci.ClientID = config.ClientID
+	nci.UserID = GetGuid()
+	h.Nci = nci
+	h.SetHH()
+	h.Process()
 }
 
 ///接收channel消息并处理
-func ReceiveMessage(nci models.Messages) {
-	//message := "jsondata={Topic:" + nci.Topic + ",Channel:" + nci.Channel + ",UserID:" + nci.UserID + ",Message:" + nci.Message + "}"
+func (h *Handle) ReceiveMessage() {
 	//llogger.Info(message)
-	nci.SendDate = time.Now()
-	ret := models.AddMessages(nci)
-
-	fmt.Println("ID：" + ret + " Message：" + nci.Message)
+	fmt.Println("Message：" + h.Nci.Message)
+	h.Nci.SendDate = time.Now()
+	//ret := models.AddMessages(h.nci)
+	RevMsg = h.Nci.MessageID + "|" + h.Nci.Message
 }

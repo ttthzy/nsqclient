@@ -4,29 +4,94 @@
 <head>
     <meta charset="utf-8">
     <title>home</title>
-    <!-- <script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js" charset="utf-8"></script> -->
+
     <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
-    <script src="js/react/0.13.0/react.js"></script>
-    <script src="js/react/0.13.0/JSXTransformer.js"></script>
-    
+    <!--<script src="js/Damoo/damoo.min.js" charset="utf-8"></script>-->
+    <!-- <script src="js/react/0.13.0/react-with-addons.min.js"></script>
+    <script src="js/react/0.13.0/JSXTransformer.js"></script> -->
+
     <script charset="utf-8">
       $(function () {
          //setInterval("BindHtml.receiveMsg()", 10000);//1000为1秒钟
-      }); 
-      
-      
-      
+         BindHtml.init();
+      });
+
       var BindHtml = {
           init: function () {
-          }, 
+            //BindHtml.conNsq();
+
+            if(typeof(EventSource)!=="undefined"){
+                var source=new EventSource("ReceiveMsg");//sendMessage后台的访问路径
+                source.onmessage=function(event){
+                    //   document.getElementById("result").innerHTML+=event.data + "<br />";
+                    //   return;
+
+
+                      var msgdata=event.data;
+
+                      var arr= new Array();
+                      arr=msgdata.split("|");
+
+                      if(arr[0] == ""){
+                        return
+                      }
+
+                      var li = $("#ul_msg li[id='msgid" + arr[0] + "']").val();
+                      if (typeof (li) == "undefined") {
+                          $("#ul_msg").append("<li id='msgid" + arr[0] + "'>" + arr[1] + "</li>");
+                      }
+                  };
+            }else{
+                document.getElementById("result").innerHTML="对不起，您的浏览器不支持服务器发送的事件…";
+            }
+          },
+
+          conNsq: function () {
+            var topic=$("#iptTopic").val();
+            var channel=$("#iptChannel").val();
+            var userid=$("#iptUserid").val();
+
+            $.ajax({
+                url: "ConMsq/",
+                type: 'GET',
+                data:{topic:topic,channel:channel,userid:userid},
+                success: function (data) {
+                  console.log("conNsq success"+data);
+                  return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log("conNsq err"+XMLHttpRequest.status);
+                    console.log("conNsq err"+XMLHttpRequest.readyState);
+                    console.log("conNsq err"+textStatus);
+                    return;
+                },
+            });
+          },
+          disNsq: function () {
+            $.ajax({
+                url: "DisMsq",
+                type: 'GET',
+                success: function (data) {
+                  console.log("disNsq success"+data);
+                  return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log("conNsq err"+XMLHttpRequest.status);
+                    console.log("conNsq err"+XMLHttpRequest.readyState);
+                    console.log("conNsq err"+textStatus);
+                    return;
+                },
+            });
+          },
           sendMsgNsq: function () {
 
               var msg = $("#iptCon").val();
               $.ajax({
-                  url: "http://nsq-ttthzygi35.tenxcloud.net:20157/put?topic=test",
+                  url: "http://120.24.210.90:4151/put?topic=test",
                   type: 'POST',
                   data: msg,
-                  success: function (data) { },
+                  success: function (data) {
+                  },
                   error: function (data) {
                       alert("消息推送完毕！");
                   },
@@ -41,16 +106,17 @@
                       sendmsg: msg
                   },
                   success: function (data) {
-                      alert(data);
+                    var jsondata = JSON.parse(data);
+                      console.log(jsondata.message);
                   },
                   error: function (data) {
-                      alert(data);
+                      console.log(data);
                   },
               });
           },
-          receiveMsg: function () {
+          getMsg: function () {
               $.ajax({
-                  url: "/ReceiveMsg/",
+                  url: "/GetMsg/",
                   type: 'GET',
                   data: {
                       topic: "test",
@@ -72,8 +138,6 @@
               });
           }
       }
-
-
     </script>
 
 </head>
@@ -84,38 +148,24 @@
         <input type="text" id="iptCon" name="iptCon" value="" />
         <input type="button" id="iptBtn" name="iptBtn" value="直推NSQ服务器" onclick="BindHtml.sendMsgNsq()" />
         <input type="button" id="iptBtn" name="iptBtn" value="后台推NSQ" onclick="BindHtml.sendMsgLocal()" />
-
-        <input type="button" id="iptBtn2" name="iptBtn2" value="拉取NSQ消息" onclick="BindHtml.receiveMsg()" />
-
+        <input type="button" id="iptBtn2" name="iptBtn2" value="拉取NSQ消息" onclick="BindHtml.getMsg()" />
+        <br />
+        <input type="text" id="iptTopic" value="test" />
+        <input type="text" id="iptChannel" value="my" />
+        <input type="text" id="iptUserid" value="001" />
+        <input type="button" id="iptBtn3" name="iptBtn3" value="连接NSQ服务器" onclick="BindHtml.conNsq()" />
+        <input type="button" id="iptBtn4" name="iptBtn4" value="断开NSQ服务器" onclick="BindHtml.disNsq()" />
 
     </div>
 
-    <div>
+    <div id="result">
         <ul id="ul_msg">
-  
+
         </ul>
     </div>
-    
-    
-    <div id="example"></div>
-    <script type="text/jsx">
-      var WithLink = React.createClass({
-  mixins: [React.addons.LinkedStateMixin],
-  getInitialState: function() {
-    return {message: 'Hello!'};
-  },
-  render: function() {
-    return <input type="text" valueLink={this.linkState('message')} />;
-  }
-});
 
-React.render(
-  <WithLink />,
-  document.getElementById('example')
-);
-      
-      
-    </script>
+
+
 
 </body>
 

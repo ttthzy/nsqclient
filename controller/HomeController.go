@@ -1,8 +1,6 @@
 package controller
 
 import (
-	//"encoding/json"
-
 	"log"
 	"net/http"
 	"text/template"

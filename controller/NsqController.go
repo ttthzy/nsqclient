@@ -6,26 +6,67 @@ import (
 	"net/http"
 	"nsqclient/lib"
 	"nsqclient/models"
+	"strconv"
+	"time"
 
 	"github.com/pquerna/ffjson/ffjson"
-	"strconv"
 )
 
+var (
+	conadd1 = "nsq-ttthzygi35.tenxcloud.net:40255"
+	conadd2 = "120.24.210.90:4150"
+)
 
-func StartNsqHandler(w http.ResponseWriter, req *http.Request) {
-    
-    
-    
-    
-    
-    
+///连接nsq
+func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+	param1, found1 := r.Form["topic"]
+	param2, found2 := r.Form["channel"]
+	param3, found3 := r.Form["userid"]
+
+	if !found1 || !found2 || !found3 {
+		io.WriteString(w, "请勿非法访问")
+		return
+	}
+
+	topic := param1[0]
+	channel := param2[0]
+	userid := param3[0]
+
+	nci := models.Messages{
+		Topic:   topic,
+		Channel: channel,
+		UserID:  userid,
+	}
+
+	lib.Connect_Nsq(conadd2, nci)
+
 }
 
+///断开nsq
+func DisMsqHandler(w http.ResponseWriter, r *http.Request) {
+	h := lib.HH
+	// m := <-h.Msgchan
+	// var params = m.ID[:]
+	// io.WriteString(w, "mid:"+string(params))
+	io.WriteString(w, h.Nci.UserID)
 
+}
 
+///ESM推送
+func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
 
+	//lib.RevMsg = "eason"
+	msg := "data:" + lib.RevMsg + "|" + time.Now().String() + "\n\n"
 
-func GetNsqHandler(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, msg)
+
+}
+
+func PostMsgHandler(w http.ResponseWriter, req *http.Request) {
 	//获取客户端通过GET/POST方式传递的参数
 	req.ParseForm()
 	param1, found1 := req.Form["sendmsg"]
@@ -40,7 +81,7 @@ func GetNsqHandler(w http.ResponseWriter, req *http.Request) {
 
 	if fdata != "" {
 		faction := "POST"
-		furl := "http://nsq-ttthzygi35.tenxcloud.net:20157/put?topic=test"
+		furl := "http://120.24.210.90:4151/put?topic=test"
 		result.Code = 100
 		result.Message = lib.HttpDo_NSQ(faction, furl, fdata)
 	} else {
@@ -61,18 +102,17 @@ func GetMsgHandler(w http.ResponseWriter, req *http.Request) {
 	var retmsg string
 	req.ParseForm()
 	param1, found1 := req.Form["topic"]
-    param2, _ := req.Form["limit"]
-
+	param2, _ := req.Form["limit"]
 
 	if !found1 {
 		retmsg = "请勿非法访问"
 	}
 
 	topic := param1[0]
-    limit,err := strconv.Atoi(param2[0])
-    if err != nil{
-        retmsg = "请勿非法访问"
-    }
+	limit, err := strconv.Atoi(param2[0])
+	if err != nil {
+		retmsg = "请勿非法访问"
+	}
 
 	if topic != "" {
 

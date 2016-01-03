@@ -8,16 +8,17 @@ import (
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
-    "net"
-    "golang.org/x/net/netutil"
+
+	"golang.org/x/net/netutil"
 )
 
 func main() {
 	//StartNsq()
-	//StartHttpServer()
-	//return
+	StartHttpServer()
+	return
 
 	running := true
 	reader := bufio.NewReader(os.Stdin)
@@ -63,10 +64,14 @@ func StartHttpServer() {
 	http.HandleFunc("/", controller.NotFoundHandler)
 
 	///API接口路由
-	http.HandleFunc("/SendMsg/", controller.GetNsqHandler)
-	http.HandleFunc("/ReceiveMsg/", controller.GetMsgHandler)
+	http.HandleFunc("/SendMsg/", controller.PostMsgHandler)
+	http.HandleFunc("/GetMsg/", controller.GetMsgHandler)
 
-    //http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/ReceiveMsg/", controller.RevMsgHandler)
+	http.HandleFunc("/ConMsq/", controller.ConMsqHandler)
+	http.HandleFunc("/DisMsq/", controller.DisMsqHandler)
+
+	//http.ListenAndServe(":8080", nil)
 	///启动监听服务
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -76,5 +81,5 @@ func StartHttpServer() {
 	l = netutil.LimitListener(l, 1000000) //最大连接数
 
 	http.Serve(l, nil)
-	
+
 }

@@ -8,12 +8,14 @@ import (
 )
 
 type Messages struct {
-	Id       bson.ObjectId `bson:"_id"`
-	Topic    string        `bson:"topic"`    //
-	Channel  string        `bson:"channel"`  //
-	UserID   string        `bson:"userid"`   //
-	Message  string        `bson:"message"`  //
-	SendDate time.Time     `bson:"senddate"` //
+	Id        bson.ObjectId `bson:"_id"`
+	Topic     string        `bson:"topic"`     //
+	Channel   string        `bson:"channel"`   //
+	UserID    string        `bson:"userid"`    //
+	Message   string        `bson:"message"`   //
+	SendDate  time.Time     `bson:"senddate"`  //
+	ClientID  string        `bson:"clientid"`  //
+	MessageID string        `bson:"messageid"` //
 }
 
 /**
