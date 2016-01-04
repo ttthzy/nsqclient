@@ -40,7 +40,7 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:  userid,
 	}
 
-	lib.Connect_Nsq(conadd2, nci)
+	lib.Connect_Nsq(conadd1, nci)
 
 }
 
@@ -81,7 +81,7 @@ func PostMsgHandler(w http.ResponseWriter, req *http.Request) {
 
 	if fdata != "" {
 		faction := "POST"
-		furl := "http://120.24.210.90:4151/put?topic=test"
+		furl := "http://nsq-ttthzygi35.tenxcloud.net:20157/put?topic=test"
 		result.Code = 100
 		result.Message = lib.HttpDo_NSQ(faction, furl, fdata)
 	} else {
