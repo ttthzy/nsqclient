@@ -8,7 +8,7 @@
     
     go build -o gb github.com/parkghost/gohttpbench。
 
-###debug
+###vscode的debug插件，win下需要gcc支持
 https://github.com/derekparker/delve
 
 
