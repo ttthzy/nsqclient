@@ -1,4 +1,8 @@
-# 用golang实现的搞并发的压力测试工具
+## 一些项目中用到的资料收集
+
+
+
+###用golang实现的搞并发的压力测试工具
 go get github.com/parkghost/gohttpbench
 go build -o gb github.com/parkghost/gohttpbench。
 
