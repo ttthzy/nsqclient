@@ -9,131 +9,13 @@
     <!--<script src="js/Damoo/damoo.min.js" charset="utf-8"></script>-->
     <!-- <script src="js/react/0.13.0/react-with-addons.min.js"></script>
     <script src="js/react/0.13.0/JSXTransformer.js"></script> -->
-
+    <script src="js/nsqc.js" charset="utf-8"></script>
     <script charset="utf-8">
       $(function () {
-         //setInterval("BindHtml.receiveMsg()", 10000);//1000为1秒钟
-         BindHtml.init();
+         BindHtml.init("home");
       });
 
-      var BindHtml = {
-          init: function () {
-            BindHtml.conNsq();
 
-            if(typeof(EventSource)!=="undefined"){
-                var source=new EventSource("ReceiveMsg");//sendMessage后台的访问路径
-                source.onmessage=function(event){
-                    document.getElementById("result").innerHTML+=event.data + "<br />";
-                    return;
-
-                      // var jsondata = JSON.parse(event.data);
-                      //
-                      // if(jsondata.ID == ""){
-                      //   return
-                      // }
-                      //
-                      // var li = $("#ul_msg li[id='msgid" + jsondata.ID + "']").val();
-                      // if (typeof (li) == "undefined") {
-                      //     $("#ul_msg").append("<li id='msgid" + jsondata.ID + "'>" + jsondata.Text + "</li>");
-                      // }
-                  };
-            }else{
-                document.getElementById("result").innerHTML="对不起，您的浏览器不支持服务器发送的事件…";
-            }
-          },
-
-          conNsq: function () {
-            var topic=$("#iptTopic").val();
-            var channel=$("#iptChannel").val();
-            var userid=$("#iptUserid").val();
-
-            $.ajax({
-                url: "ConMsq/",
-                type: 'GET',
-                data:{topic:topic,channel:channel,userid:userid},
-                success: function (data) {
-                  console.log("conNsq success"+data);
-                  return;
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    console.log("conNsq err"+XMLHttpRequest.status);
-                    console.log("conNsq err"+XMLHttpRequest.readyState);
-                    console.log("conNsq err"+textStatus);
-                    return;
-                },
-            });
-          },
-          disNsq: function () {
-            $.ajax({
-                url: "DisMsq",
-                type: 'GET',
-                success: function (data) {
-                  console.log("disNsq success"+data);
-                  return;
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    console.log("conNsq err"+XMLHttpRequest.status);
-                    console.log("conNsq err"+XMLHttpRequest.readyState);
-                    console.log("conNsq err"+textStatus);
-                    return;
-                },
-            });
-          },
-          sendMsgNsq: function () {
-
-              var msg = $("#iptCon").val();
-              $.ajax({
-                  url: "http://nsq-ttthzygi35.tenxcloud.net:20157/put?topic=test",
-                  type: 'POST',
-                  data: msg,
-                  success: function (data) {
-                  },
-                  error: function (data) {
-                      alert("消息推送完毕！");
-                  },
-              });
-          },
-          sendMsgLocal: function () {
-              var msg = $("#iptCon").val();
-              $.ajax({
-                  url: "/SendMsg/",
-                  type: 'GET',
-                  data: {
-                      sendmsg: msg
-                  },
-                  success: function (data) {
-                    var jsondata = JSON.parse(data);
-                      console.log(jsondata.message);
-                  },
-                  error: function (data) {
-                      console.log(data);
-                  },
-              });
-          },
-          getMsg: function () {
-              $.ajax({
-                  url: "/GetMsg/",
-                  type: 'GET',
-                  data: {
-                      topic: "test",
-                      limit: 1
-                  },
-                  success: function (data) {
-                      var jsondata = JSON.parse(data);
-
-                      for (var i = 0; i < jsondata.length; i++) {
-                          var li = $("#ul_msg li[id='mli" + jsondata[i].Id + "']").val();
-                          if (typeof (li) == "undefined") {
-                              $("#ul_msg").append("<li id='mli" + jsondata[i].Id + "'>" + jsondata[i].Message + "</li>");
-                          }
-                      }
-                  },
-                  error: function (data) {
-                      alert(data);
-                  },
-              });
-          }
-      }
     </script>
 
 </head>
@@ -143,7 +25,7 @@
         <br />
         <input type="text" id="iptCon" name="iptCon" value="" />
         <input type="hidden" id="iptBtn" name="iptBtn" value="直推NSQ服务器" onclick="BindHtml.sendMsgNsq()" />
-        <input type="button" id="iptBtn" name="iptBtn" value="推送消息" onclick="BindHtml.sendMsgLocal()" />
+        <input type="button" id="iptBtn" name="iptBtn" value="推送消息" onclick="BindHtml.sendMsgLocal($('#iptCon').val())" />
         <input type="hidden" id="iptBtn2" name="iptBtn2" value="拉取NSQ消息" onclick="BindHtml.getMsg()" />
         <br />
 

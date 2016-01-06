@@ -6,6 +6,7 @@
   <title>Index</title>
   <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
   <script src="js/Damoo/damoo.js" charset="utf-8"></script>
+  <script src="js/nsqc.js" charset="utf-8"></script>
   <link rel="stylesheet" href="/css/barrage.css" media="screen" charset="utf-8">
 
 </head>
@@ -29,6 +30,12 @@
     scrn.height(window.innerHeight + "px");
     scrn.opacity=1;
   })(window);
+
+  $(function () {
+     BindHtml.init();
+  });
+
+
 
   $("#dm-version").html(Damoo.version);
 
@@ -56,21 +63,7 @@
       case 13:
         var text = prompt("Text?");
         if (!text) return;
-        // var color = prompt("字体颜色? (#fff)");
-        // var fixed = prompt("让字飘起来? (y/n)");
-        // fixed = (fixed == "y" || fixed == "Y");
-        // var shadow = prompt("字体阴影? (y/n)");
-        // if (shadow == "y" || shadow == "Y") {
-        //   shadow = {
-        //     color: prompt("阴影颜色? (#fff)")
-        //   };
-        // }
-        damoo.emit({
-          text: text,
-          color: "#6f9",
-          fixed: false,
-          shadow: true
-        });
+        BindHtml.sendMsgLocal(text);
         break;
       case 47:
         damoo.clear();
@@ -96,27 +89,12 @@
     return false;
   });
 
-  var list = [{
-    text: "你好",
-    color: "#6f9",
-    fixed: false,
-    shadow: true
-  }, {
-    text: "我不好",
-    color: "#6f9",
-    fixed: false,
-    shadow: true
-  }];
 
-  var i = 0;
 
-  var demoInterval = setInterval(function() {
-    if (list[i]) {
-      damoo.emit(list[i++]);
-    } else {
-      clearInterval(demoInterval);
-    }
-  }, 150);
+  BindHtml.init("index");
+
+
+
 </script>
 
 

@@ -64,7 +64,7 @@ func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	//msg := "data:" + lib.RevMsg[0] + "|" + lib.RevMsg[1] + "|" + time.Now().String() + "\n\n"
 	// mm := strings.Split(lib.RevMsg, "|")
 	m := make(map[string]string)
-	m["ID"] = lib.RevMsg[0]
+	m["MssageID"] = lib.RevMsg[0]
 	m["Mssage"] = lib.RevMsg[1]
 	m["DateTime"] = time.Now().String()
 
