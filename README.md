@@ -1,7 +1,14 @@
-# nsqclient
-研究一下nsq客户端，代码需要改进，仍有错误。
+## 一些项目中用到的资料收集
 
-###debug
+
+
+###用golang实现的搞并发的压力测试工具
+
+    go get github.com/parkghost/gohttpbench
+    
+    go build -o gb github.com/parkghost/gohttpbench。
+
+###vscode的debug插件，win下需要gcc支持
 https://github.com/derekparker/delve
 
 
@@ -11,3 +18,6 @@ http://www.ruanyifeng.com/blog/2015/03/react.html
 
 ### Teleport
 https://github.com/henrylee2cn/teleport
+
+### Spider
+https://github.com/hu17889/go_spider
