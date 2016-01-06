@@ -2,167 +2,122 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <title>Index</title>
-
-    <style type="text/css">
-        html,
-        body,
-        #dm-main {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            font: 22px Menlo, monospace;
-        }
-        
-        html {
-            background: transparent;
-        }
-        
-        body {
-            background-color: #000;
-        }
-        
-        a,
-        a:visited,
-        a:active {
-            color: #888;
-            text-decoration: none;
-        }
-        
-        a:hover {
-            color: #aaa;
-            text-decoration: underline;
-        }
-        
-        #dm-screen {
-            color: #888;
-        }
-        
-        #dm-info {
-            padding: 10px;
-            border-radius: 3px;
-            display: block;
-            position: absolute;
-            left: 0px;
-            top: 0px;
-            z-index: 100000;
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-    </style>
-
+  <meta charset="utf-8">
+  <title>Index</title>
+  <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
+  <script src="js/Damoo/damoo.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="/css/barrage.css" media="screen" charset="utf-8">
 
 </head>
 
 <body>
-    <div id="dm-main">
-        <div id="dm-screen" style="width: 1366px; height: 667px; opacity: 1; position: relative;">
+  <div id="dm-main">
+    <div id="dm-screen" style="width: 1366px; height: 667px; opacity: 1; position: relative;">
 
-            <canvas id="dm-canvas" width="1366" height="667" style="display: block; position: absolute; left: 0px; top: 0px; z-index: 99999; background-color: transparent;"></canvas>
-        </div>
+      <canvas id="dm-canvas" width="1366" height="667" style="display: block; position: absolute; left: 0px; top: 0px; z-index: 99999; background-color: transparent;"></canvas>
+
     </div>
-
-    <script src="js/Damoo/damoo.js" charset="utf-8"></script>
-    <script type="text/javascript">
-        (function(window) {
-    var scrn = window.document.getElementById('dm-screen');
-    scrn.style.width = window.innerWidth + "px";
-    scrn.style.height = window.innerHeight + "px";
-    scrn.style.opacity = 1;
-})(window);
-
-document.getElementById('dm-version').innerHTML = Damoo.version;
-
-var damoo = Damoo('dm-screen', 'dm-canvas', 20, "Arial");
-
-damoo.start();
-
-var addEvent = function(obj, nm, cb) {
-    if (window.addEventListener) {
-        obj.addEventListener(nm, cb, false);
-    } else if (window.attachEvent) {
-        obj.attachEvent("on" + nm, cb);
-    }
-};
-
-damoo.emit({ text: "Welcome to Damoo", color: "#" + Math.random().toString(16).substring(2).substring(0, 6) });
-
-addEvent(document.body, "keypress", function(e) {
-    var keyCode = e.keyCode || e.which;
-    switch (keyCode) {
-        case 13:
-            var text = prompt("Text?");
-            if (!text) return;
-            var color = prompt("Text color? (#fff)");
-            var fixed = prompt("Fixed? (y/n)");
-            fixed = (fixed == "y" || fixed == "Y");
-            var shadow = prompt("Shadow? (y/n)");
-            if (shadow == "y" || shadow == "Y") {
-                shadow = { color: prompt("Shadow color? (#fff)") };
-            }
-            damoo.emit({ text: text, color: color, fixed: fixed, shadow: shadow });
-            break;
-        case 47:
-            damoo.clear();
-            break;
-        case 60:
-            if (scrn.style.opacity > 0) {
-                scrn.style.opacity = Number(scrn.style.opacity) - 0.1;
-            }
-            break;
-        case 62:
-            if (scrn.style.opacity < 1) {
-                scrn.style.opacity = Number(scrn.style.opacity) + 0.1;
-            }
-            break;
-        case 32:
-            if (damoo.state) {
-                damoo.suspend();
-            } else {
-                damoo.resume();
-            }
-            break;
-    }
-    return false;
-});
-
-var list = [{ text: "美国 圣地亚戈 American Shengdiyage", color: "#6f9", fixed: true }
-,{ text: "我们需要金坷垃", color: "#6f9", shadow: true }
-,{ text: "非洲农业不发达", color: "#000", shadow: true }
-,{ text: "有了金坷垃，亩产一亿⑧", color: "#fff", shadow: { color: "#f00" } }
-,{ text: "日本资源太缺乏！", color: "#000", shadow: true }
-,{ text: "肥料掺了金坷垃！一袋能顶两袋撒！", color: "#000", shadow: true }
-,{ text: "没有金坷垃，怎么种庄稼？", color: "#f00", shadow: { color: "#6f9" } }
-,{ text: "肥料掺了金坷垃不流失！不蒸发！零浪费！", color: "#b8860b", shadow: { color: "#3a5" } }
-,{ text: "(╯°д°)╯︵ ┻━┻", color: "#fff" }
-,{ text: "用了金坷垃小麦亩产一千八，日本的粮食再也不向美国进口了！", color: "#000", shadow: { color: "#ff0" } }
-,{ text: "哈哈哈哈哈！", color: "#000", shadow: { color: "#ff0" } }
-,{ text: "小鬼子，真不傻！", color: "#b8860b", shadow: true }
-,{ text: "金坷垃给了他，对美国农业危害大，绝不能给他。", color: "#b8860b", shadow: true }
-,{ text: "非洲农业不发达，我们都要支援他。", color: "#000", shadow: true }
-,{ text: "金坷垃，你们日本别想了！", color: "#b8860b", shadow: true }
-,{ text: "金坷垃！金坷垃！我们的！我们的！", color: "#f49" }
-,{ text: "非洲农业不发达", color: "#000", shadow: true }
-,{ text: "日本资源太缺乏！", color: "#000", shadow: true }
-,{ text: "有了金坷垃，亩产一亿⑧", color: "#fff", shadow: { color: "#f00" } }
-,{ text: "(╯°д°)╯︵ ┻━┻", color: "#fff" }
-,{ text: "(╯°д°)╯︵ ┻━┻", color: "#fff" }
-,{ text: "(╯°д°)╯︵ ┻━┻", color: "#fff" }
-,{ text: "没有金坷垃，怎么种庄稼？", color: "#f00", shadow: { color: "#6f9" } }
-,{ text: "没有金坷垃，怎么种庄稼？", color: "#f00", shadow: { color: "#6f9" } }];
-
-var i = 0;
-
-var demoInterval = setInterval(function() {
-    if (list[i]) {
-        damoo.emit(list[i++]);
-    } else {
-        clearInterval(demoInterval);
-    }
-}, 150);
-    </script>
-
+  </div>
 
 </body>
+
+
+<script type="text/javascript">
+  (function(window) {
+    var scrn = $("#dm-screen");
+    scrn.width(window.innerWidth + "px");
+    scrn.height(window.innerHeight + "px");
+    scrn.opacity=1;
+  })(window);
+
+  $("#dm-version").html(Damoo.version);
+
+  var damoo = Damoo('dm-screen', 'dm-canvas', 20, "Arial");
+
+  damoo.start();
+
+  var addEvent = function(obj, nm, cb) {
+    if (window.addEventListener) {
+      obj.addEventListener(nm, cb, false);
+    } else if (window.attachEvent) {
+      obj.attachEvent("on" + nm, cb);
+    }
+  };
+
+  damoo.emit({
+    text: "这是一个基于NSQ弹幕的简单演示",
+    color: "#" + Math.random().toString(16).substring(2).substring(0, 6),
+    fixed: true
+  });
+
+  addEvent(document.body, "keypress", function(e) {
+    var keyCode = e.keyCode || e.which;
+    switch (keyCode) {
+      case 13:
+        var text = prompt("Text?");
+        if (!text) return;
+        // var color = prompt("字体颜色? (#fff)");
+        // var fixed = prompt("让字飘起来? (y/n)");
+        // fixed = (fixed == "y" || fixed == "Y");
+        // var shadow = prompt("字体阴影? (y/n)");
+        // if (shadow == "y" || shadow == "Y") {
+        //   shadow = {
+        //     color: prompt("阴影颜色? (#fff)")
+        //   };
+        // }
+        damoo.emit({
+          text: text,
+          color: "#6f9",
+          fixed: false,
+          shadow: true
+        });
+        break;
+      case 47:
+        damoo.clear();
+        break;
+      case 60:
+        if (scrn.style.opacity > 0) {
+          scrn.style.opacity = Number(scrn.style.opacity) - 0.1;
+        }
+        break;
+      case 62:
+        if (scrn.style.opacity < 1) {
+          scrn.style.opacity = Number(scrn.style.opacity) + 0.1;
+        }
+        break;
+      case 32:
+        if (damoo.state) {
+          damoo.suspend();
+        } else {
+          damoo.resume();
+        }
+        break;
+    }
+    return false;
+  });
+
+  var list = [{
+    text: "你好",
+    color: "#6f9",
+    fixed: false,
+    shadow: true
+  }, {
+    text: "我不好",
+    color: "#6f9",
+    fixed: false,
+    shadow: true
+  }];
+
+  var i = 0;
+
+  var demoInterval = setInterval(function() {
+    if (list[i]) {
+      damoo.emit(list[i++]);
+    } else {
+      clearInterval(demoInterval);
+    }
+  }, 150);
+</script>
+
 
 </html>

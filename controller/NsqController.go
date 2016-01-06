@@ -40,7 +40,7 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:  userid,
 	}
 
-	lib.Connect_Nsq(conadd1, nci)
+	go lib.Connect_Nsq(conadd1, nci)
 
 }
 
@@ -59,9 +59,18 @@ func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 
+	//h := lib.HH
 	//lib.RevMsg = "eason"
-	msg := "data:" + lib.RevMsg + "|" + time.Now().String() + "\n\n"
+	//msg := "data:" + lib.RevMsg[0] + "|" + lib.RevMsg[1] + "|" + time.Now().String() + "\n\n"
+	// mm := strings.Split(lib.RevMsg, "|")
+	m := make(map[string]string)
+	m["ID"] = lib.RevMsg[0]
+	m["Mssage"] = lib.RevMsg[1]
+	m["DateTime"] = time.Now().String()
 
+	//
+	bytes, _ := ffjson.Marshal(m)
+	msg := "data:" + string(bytes) + "\n\n"
 	io.WriteString(w, msg)
 
 }

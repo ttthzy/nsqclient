@@ -15,7 +15,9 @@ type Handle struct {
 	Nci        models.Messages
 }
 
-var RevMsg string
+//给客户端推送的消息
+var RevMsg [2]string
+
 var HH *Handle
 
 func (h *Handle) HandleMsg(m *nsq.Message) error {
@@ -93,5 +95,7 @@ func (h *Handle) ReceiveMessage() {
 	fmt.Println("Message：" + h.Nci.Message)
 	h.Nci.SendDate = time.Now()
 	//ret := models.AddMessages(h.nci)
-	RevMsg = h.Nci.MessageID + "|" + h.Nci.Message
+	RevMsg[0] = h.Nci.MessageID
+	RevMsg[1] = h.Nci.Message
+	//RevMsg = h.Nci.MessageID + "|" + h.Nci.Message
 }

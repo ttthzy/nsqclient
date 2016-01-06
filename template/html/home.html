@@ -23,23 +23,19 @@
             if(typeof(EventSource)!=="undefined"){
                 var source=new EventSource("ReceiveMsg");//sendMessage后台的访问路径
                 source.onmessage=function(event){
-                    //   document.getElementById("result").innerHTML+=event.data + "<br />";
-                    //   return;
+                    document.getElementById("result").innerHTML+=event.data + "<br />";
+                    return;
 
-
-                      var msgdata=event.data;
-
-                      var arr= new Array();
-                      arr=msgdata.split("|");
-
-                      if(arr[0] == ""){
-                        return
-                      }
-
-                      var li = $("#ul_msg li[id='msgid" + arr[0] + "']").val();
-                      if (typeof (li) == "undefined") {
-                          $("#ul_msg").append("<li id='msgid" + arr[0] + "'>" + arr[1] + "</li>");
-                      }
+                      // var jsondata = JSON.parse(event.data);
+                      //
+                      // if(jsondata.ID == ""){
+                      //   return
+                      // }
+                      //
+                      // var li = $("#ul_msg li[id='msgid" + jsondata.ID + "']").val();
+                      // if (typeof (li) == "undefined") {
+                      //     $("#ul_msg").append("<li id='msgid" + jsondata.ID + "'>" + jsondata.Text + "</li>");
+                      // }
                   };
             }else{
                 document.getElementById("result").innerHTML="对不起，您的浏览器不支持服务器发送的事件…";
@@ -150,7 +146,7 @@
         <input type="button" id="iptBtn" name="iptBtn" value="推送消息" onclick="BindHtml.sendMsgLocal()" />
         <input type="hidden" id="iptBtn2" name="iptBtn2" value="拉取NSQ消息" onclick="BindHtml.getMsg()" />
         <br />
-        
+
         <div style="display:none">
         <input type="text" id="iptTopic" value="test" />
         <input type="text" id="iptChannel" value="my" />

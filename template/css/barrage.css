@@ -1,0 +1,33 @@
+html, body, #dm-main {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: 22px Menlo, monospace;
+}
+html {
+  background: transparent;
+}
+body {
+  background-color: #000;
+}
+a, a:visited, a:active {
+  color: #888;
+  text-decoration: none;
+}
+a:hover {
+  color: #aaa;
+  text-decoration: underline;
+}
+#dm-screen {
+  color: #888;
+}
+#dm-info {
+  padding: 10px;
+  border-radius: 3px;
+  display: block;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 100000;
+  background-color: rgba(255, 255, 255, 0.2);
+}
