@@ -59,7 +59,7 @@ func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 
 
 	m := make(map[string]string)
-	m["ID"] = lib.RevMsg[0]
+	m["MssageID"] = lib.RevMsg[0]
 	m["Mssage"] = lib.RevMsg[1]
 	m["DateTime"] = time.Now().String()
 

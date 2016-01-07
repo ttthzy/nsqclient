@@ -9,13 +9,13 @@
     <!--<script src="js/Damoo/damoo.min.js" charset="utf-8"></script>-->
     <!-- <script src="js/react/0.13.0/react-with-addons.min.js"></script>
     <script src="js/react/0.13.0/JSXTransformer.js"></script> -->
-
+    <script src="js/nsqc.js" charset="utf-8"></script>
     <script charset="utf-8">
       $(function () {
-         //setInterval("BindHtml.receiveMsg()", 10000);//1000为1秒钟
-         BindHtml.init();
+         BindHtml.init("home");
       });
 
+<<<<<<< HEAD
       var BindHtml = {
           init: function () {
             BindHtml.conNsq();
@@ -120,20 +120,9 @@
                   },
                   success: function (data) {
                       var jsondata = JSON.parse(data);
+=======
+>>>>>>> 2f6a0d0f1eab63fb1c04c93ec496ea1ed1ee1614
 
-                      for (var i = 0; i < jsondata.length; i++) {
-                          var li = $("#ul_msg li[id='mli" + jsondata[i].Id + "']").val();
-                          if (typeof (li) == "undefined") {
-                              $("#ul_msg").append("<li id='mli" + jsondata[i].Id + "'>" + jsondata[i].Message + "</li>");
-                          }
-                      }
-                  },
-                  error: function (data) {
-                      alert(data);
-                  },
-              });
-          }
-      }
     </script>
 
 </head>
@@ -143,7 +132,7 @@
         <br />
         <input type="text" id="iptCon" name="iptCon" value="" />
         <input type="hidden" id="iptBtn" name="iptBtn" value="直推NSQ服务器" onclick="BindHtml.sendMsgNsq()" />
-        <input type="button" id="iptBtn" name="iptBtn" value="推送消息" onclick="BindHtml.sendMsgLocal()" />
+        <input type="button" id="iptBtn" name="iptBtn" value="推送消息" onclick="BindHtml.sendMsgLocal($('#iptCon').val())" />
         <input type="hidden" id="iptBtn2" name="iptBtn2" value="拉取NSQ消息" onclick="BindHtml.getMsg()" />
         <br />
 
