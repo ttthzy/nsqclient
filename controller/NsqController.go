@@ -44,12 +44,10 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-///断开nsq
-func DisMsqHandler(w http.ResponseWriter, r *http.Request) {
+///nsqInfo
+func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
 	h := lib.HH
-	// m := <-h.Msgchan
-	// var params = m.ID[:]
-	// io.WriteString(w, "mid:"+string(params))
+
 	io.WriteString(w, h.Nci.UserID)
 
 }
@@ -59,10 +57,7 @@ func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 
-	//h := lib.HH
-	//lib.RevMsg = "eason"
-	//msg := "data:" + lib.RevMsg[0] + "|" + lib.RevMsg[1] + "|" + time.Now().String() + "\n\n"
-	// mm := strings.Split(lib.RevMsg, "|")
+
 	m := make(map[string]string)
 	m["ID"] = lib.RevMsg[0]
 	m["Mssage"] = lib.RevMsg[1]

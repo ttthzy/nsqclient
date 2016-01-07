@@ -69,7 +69,7 @@ func StartHttpServer() {
 
 	http.HandleFunc("/ReceiveMsg/", controller.RevMsgHandler)
 	http.HandleFunc("/ConMsq/", controller.ConMsqHandler)
-	http.HandleFunc("/DisMsq/", controller.DisMsqHandler)
+	http.HandleFunc("/InfoMsq/", controller.InfoMsqHandler)
 
 	//http.ListenAndServe(":8080", nil)
 	///启动监听服务
