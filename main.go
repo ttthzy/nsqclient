@@ -18,6 +18,8 @@ import (
 func main() {
 	//StartNsq()
 	StartHttpServer()
+
+	//test
 	return
 
 	running := true
