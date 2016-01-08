@@ -1,6 +1,11 @@
 package lib
 
-import "nsqclient/models"
+import (
+	"io/ioutil"
+	"net/http"
+	"nsqclient/models"
+	"strings"
+)
 
 import (
 	"fmt"
@@ -15,8 +20,9 @@ type Handle struct {
 	Nci        models.Messages
 }
 
-//给客户端推送的消息
-var RevMsg [2]string
+///推送返回的消息体
+//var RevMsg [2]string
+var RevMsg map[string]string = make(map[string]string)
 
 var HH *Handle
 
@@ -91,11 +97,50 @@ func Connect_Nsq(constr string, nci models.Messages) {
 
 ///接收channel消息并处理
 func (h *Handle) ReceiveMessage() {
+	msg := DecodeStr(h.Nci.Message)
 	//llogger.Info(message)
-	fmt.Println("Message：" + h.Nci.Message)
-	h.Nci.SendDate = time.Now()
+	fmt.Println("Message：" + msg)
+
 	//ret := models.AddMessages(h.nci)
-	RevMsg[0] = h.Nci.MessageID
-	RevMsg[1] = h.Nci.Message
-	//RevMsg = h.Nci.MessageID + "|" + h.Nci.Message
+
+	if h.Nci.MessageID == "" {
+		return
+	}
+	if h.Nci.MessageID == "undefined" {
+		return
+	}
+	if msg == "" {
+		return
+	}
+	if msg == "undefined" {
+		return
+	}
+
+	RevMsg["UserID"] = h.Nci.UserID
+	RevMsg["MssageID"] = h.Nci.MessageID
+	RevMsg["Mssage"] = msg
+	RevMsg["DateTime"] = time.Now().String()
+
+}
+
+///向nsq服务器推送一条消息
+func HttpDo_NSQ(faction, furl, fdata string) string {
+	client := &http.Client{}
+	req, err := http.NewRequest(faction, furl, strings.NewReader(EncodeStr(fdata)))
+	if err != nil {
+		return "接口错误"
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	//req.Header.Set("Cookie", "name=anny")
+
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "发送失败"
+	}
+	return string(body)
 }

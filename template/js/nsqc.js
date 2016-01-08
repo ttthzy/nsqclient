@@ -93,31 +93,33 @@ var BindHtml = {
     });
   },
   getMsg: function(data) {
-    var jsondata = JSON.parse(data);
 
-    if (jsondata.MssageID == "") {
-      return
+    if (jsondata != "undefined") {
+      var jsondata = JSON.parse(data);
+      var li = $("#ul_msg li[id='msgid" + jsondata.MssageID + "']").val();
+      if (typeof(li) == "undefined") {
+        $("#ul_msg").append("<li id='msgid" + jsondata.MssageID + "'>" + jsondata.Mssage + "</li>");
+      }
     }
 
-    var li = $("#ul_msg li[id='msgid" + jsondata.MssageID + "']").val();
-    if (typeof(li) == "undefined") {
-      $("#ul_msg").append("<li id='msgid" + jsondata.MssageID + "'>" + jsondata.Mssage + "</li>");
-    }
+
   },
   getBarrageMsg: function(data) {
-    var jsondata = JSON.parse(data);
 
-    if (jsondata.MssageID == "") {
-      return
+    if (jsondata != "undefined") {
+      var jsondata = {
+        id: jsondata.MssageID,
+        text: jsondata.Mssage,
+        color: "#6f9",
+        fixed: false,
+        shadow: true
+      };
+
+      damoo.emit(jsondata);
     }
-    var jsondata = {
-      id: jsondata.MssageID,
-      text: jsondata.Mssage,
-      color: "#6f9",
-      fixed: false,
-      shadow: true
-    };
 
-    damoo.emit(jsondata);
+
+
+
   }
 }

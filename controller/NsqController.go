@@ -7,7 +7,6 @@ import (
 	"nsqclient/lib"
 	"nsqclient/models"
 	"strconv"
-	"time"
 
 	"github.com/pquerna/ffjson/ffjson"
 )
@@ -56,15 +55,9 @@ func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
 func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
-
-
-	m := make(map[string]string)
-	m["MssageID"] = lib.RevMsg[0]
-	m["Mssage"] = lib.RevMsg[1]
-	m["DateTime"] = time.Now().String()
-
 	//
-	bytes, _ := ffjson.Marshal(m)
+
+	bytes, _ := ffjson.Marshal(lib.RevMsg)
 	msg := "data:" + string(bytes) + "\n\n"
 	io.WriteString(w, msg)
 
