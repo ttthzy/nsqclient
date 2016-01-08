@@ -23,4 +23,5 @@ https://github.com/henrylee2cn/teleport
 https://github.com/hu17889/go_spider
 
 ### 基于H5的弹幕js引擎
-https://github.com/jabbany/CommentCoreLibrary
+https://github.com/jabbany/CommentCoreLibrary（作者停止开发了）
+https://github.com/jabbany/ABPlayerHTML5（最新）
