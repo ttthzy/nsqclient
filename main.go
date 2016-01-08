@@ -61,6 +61,7 @@ func StartHttpServer() {
 	//页面路由
 	http.HandleFunc("/index.html", controller.IndexHandler)
 	http.HandleFunc("/home.html", controller.HomeHandler)
+	http.HandleFunc("/test.html", controller.TestHandler)
 	http.HandleFunc("/", controller.NotFoundHandler)
 
 	///API接口路由

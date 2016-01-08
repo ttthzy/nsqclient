@@ -28,3 +28,12 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 
 }
+
+func TestHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("template/html/test.html")
+	if err != nil {
+		log.Println(err)
+	}
+	t.Execute(w, nil)
+
+}
