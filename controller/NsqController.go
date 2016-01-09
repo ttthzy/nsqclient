@@ -55,10 +55,15 @@ func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
 func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
-	//
-
-	bytes, _ := ffjson.Marshal(lib.RevMsg)
-	msg := "data:" + string(bytes) + "\n\n"
+	
+    fileHelper:=new(lib.FileHelper)
+    data,err:=fileHelper.ReadFile("./nsqconsumer/data.txt")
+    
+    if err!=nil{
+        data="data load failed"
+    }
+    
+    msg:= "data:" +data + "\n\n"
 	io.WriteString(w, msg)
 
 }
