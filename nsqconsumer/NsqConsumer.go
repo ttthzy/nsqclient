@@ -1,6 +1,7 @@
 package main
 
 import (
+    "nsqclient/lib"
 	"nsqclient/models"
     "github.com/nsqio/go-nsq"
 	"fmt"
@@ -17,15 +18,15 @@ type NsqMsgHandler struct{
     waitGroup sync.WaitGroup
 }
 
-//NSQ消息处理
+///NSQ消息处理
 func (handler *NsqMsgHandler)HandleMessage(nsqMsg *nsq.Message) error{
     handler.waitGroup.Add(1)
     defer handler.waitGroup.Done()
 
-    handler.msg.Message=string(nsqMsg.Body)
+    handler.msg.Message=lib.DecodeStr(string(nsqMsg.Body))
     handler.msg.MessageID=string(nsqMsg.ID[:])
     handler.msg.SendDate=time.Now()
-    fmt.Println("Got msg:",handler.msg.Message)
+    fmt.Println("Got msg:",handler.msg.MessageID,handler.msg.Message)
     return nil
 }
 
