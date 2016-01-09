@@ -2,33 +2,40 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <title>Index</title>
-    <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
-    <script src="js/Damoo/damoo.js" charset="utf-8"></script>
-    <script src="js/nsqc.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="/css/barrage.css" media="screen" charset="utf-8">
+  <meta charset="utf-8">
+  <title>Index</title>
+  <script src="js/jquery/jquery-2.1.1.min.js" charset="utf-8"></script>
+  <script src="js/Damoo/damoo.js" charset="utf-8"></script>
+  <script src="js/nsqc.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="/css/barrage.css" media="screen" charset="utf-8">
+
 </head>
 
 <body>
-    <div id="dm-main">
-        <div id="dm-screen" style="width: 1366px; height: 667px; opacity: 1; position: relative;">
+  <div id="dm-main">
+    <div id="dm-screen" style="width: 1366px; height: 667px; opacity: 1; position: relative;">
 
-            <canvas id="dm-canvas" width="1366" height="667" style="display: block; position: absolute; left: 0px; top: 0px; z-index: 99999; background-color: transparent;"></canvas>
+      <canvas id="dm-canvas" width="1366" height="667" style="display: block; position: absolute; left: 0px; top: 0px; z-index: 99999; background-color: transparent;"></canvas>
 
-        </div>
     </div>
+  </div>
 
 </body>
 
 
 <script type="text/javascript">
-    (function(window) {
+  (function(window) {
     var scrn = $("#dm-screen");
     scrn.width(window.innerWidth + "px");
     scrn.height(window.innerHeight + "px");
     scrn.opacity=1;
   })(window);
+
+  $(function () {
+     BindHtml.init();
+  });
+
+
 
   $("#dm-version").html(Damoo.version);
 
@@ -82,7 +89,13 @@
     return false;
   });
 
+
+
+  BindHtml.init("index");
+
+
+
 </script>
-<script src="js/index.js" charset="utf-8"></script>
+
 
 </html>
