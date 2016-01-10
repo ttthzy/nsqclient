@@ -8,14 +8,12 @@ import (
 )
 
 type Messages struct {
-	Id        bson.ObjectId `bson:"_id"`
-	Topic     string        `bson:"topic"`     //
-	Channel   string        `bson:"channel"`   //
-	UserID    string        `bson:"userid"`    //
-	Message   string        `bson:"message"`   //
-	SendDate  time.Time     `bson:"senddate"`  //
-	ClientID  string        `bson:"clientid"`  //
-	MessageID string        `bson:"messageid"` //
+	Id         bson.ObjectId `bson:"_id"`
+	Message    string        `bson:"message"`    //
+	SendDate   time.Time     `bson:"senddate"`   //
+	ConsumerID string        `bson:"Consumerid"` //
+	MessageID  string        `bson:"messageid"`  //
+	IsDel      bool          `bson:"isdel"`      //
 }
 
 /**
@@ -34,15 +32,15 @@ func AddMessages(p Messages) string {
 }
 
 //更新Messages数据
-func UpdateMessages(query bson.M, change bson.M) string {
+func UpdateMessages(query bson.M, change bson.M) bool {
 	exop := func(c *mgo.Collection) error {
 		return c.Update(query, change)
 	}
 	err := WitchCollection("Messages", exop)
 	if err != nil {
-		return "true"
+		return false
 	}
-	return "false"
+	return true
 }
 
 //获取所有的Messages数据
@@ -59,12 +57,14 @@ func PageMessages() []Messages {
 }
 
 //根据指定字段查询Messages数据
-func GetMessagesForField(fieldname string, fieldvalue string, limit int) []Messages {
+func GetMessagesForField(fields map[string]interface{}, sort string, limit int) []Messages {
 	var list []Messages
-	qstr := bson.M{fieldname: fieldvalue}
-	//sort := bson.M{"senddate": "-1"}
+	qstr := make(bson.M)
+	for k, v := range qstr {
+		qstr[k] = v
+	}
 	query := func(c *mgo.Collection) error {
-		return c.Find(qstr).Sort("-senddate").Limit(limit).All(&list)
+		return c.Find(qstr).Sort(sort).Limit(limit).All(&list)
 	}
 	err := WitchCollection("Messages", query)
 	if err != nil {

@@ -1,9 +1,10 @@
 var BindHtml = {
   init: function(pageid) {
-    BindHtml.conNsq();
+    BindHtml.conNsq("test", "9527", "18321421187");
 
     if (typeof(EventSource) !== "undefined") {
-      var source = new EventSource("ReceiveMsg"); //sendMessage后台的访问路径
+      var source = new EventSource("ReceiveMsg"); //从服务器内存取
+      //var source = new EventSource("GetMsgDB/?topic='test'&sort='-senddate'&limit=10"); //从数据库取
       source.onmessage = function(event) {
         // document.getElementById("result").innerHTML+=event.data + "<br />";
         // return;
@@ -21,10 +22,7 @@ var BindHtml = {
     }
   },
 
-  conNsq: function() {
-    var topic = $("#iptTopic").val();
-    var channel = $("#iptChannel").val();
-    var userid = $("#iptUserid").val();
+  conNsq: function(topic, channel, userid) {
 
     $.ajax({
       url: "ConMsq/",
@@ -35,8 +33,7 @@ var BindHtml = {
         userid: userid
       },
       success: function(data) {
-        console.log("conNsq success" + data);
-        return;
+          console.log("conNsq"+data);
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         console.log("conNsq err" + XMLHttpRequest.status);
@@ -92,6 +89,24 @@ var BindHtml = {
       },
     });
   },
+  getMsgDB: function(topic) {
+    $.ajax({
+      url: "/GetMsgDB/",
+      type: 'GET',
+      data: {
+        topic: topic,
+        sort: "-senddate",
+        limit: 10
+      },
+      success: function(data) {
+        var jsondata = JSON.parse(data);
+        console.log(jsondata);
+      },
+      error: function(data) {
+        console.log(data);
+      },
+    });
+  },
   getMsg: function(data) {
 
     if (jsondata != "undefined") {
@@ -105,8 +120,8 @@ var BindHtml = {
 
   },
   getBarrageMsg: function(data) {
-
     if (jsondata != "undefined") {
+      var jsondata = JSON.parse(data);
       var jsondata = {
         id: jsondata.MssageID,
         text: jsondata.Mssage,
@@ -117,9 +132,24 @@ var BindHtml = {
 
       damoo.emit(jsondata);
     }
-
-
-
-
+  },
+  pageOut: function(userid, hostid) {
+    $.ajax({
+      url: "/StopConsumer/",
+      type: 'GET',
+      data: {
+        userid: userid,
+        hostid: hostid
+      },
+      success: function(data) {
+        console.log(data);
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        console.log("pageOut err" + XMLHttpRequest.status);
+        console.log("pageOut err" + XMLHttpRequest.readyState);
+        console.log("pageOut err" + textStatus);
+        return;
+      },
+    });
   }
 }

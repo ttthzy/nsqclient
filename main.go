@@ -1,10 +1,7 @@
 package main
 
-import (
-	"nsqclient/controller"
-	"nsqclient/lib"
-	"nsqclient/models"
-)
+import "nsqclient/controller"
+
 import (
 	"bufio"
 	"fmt"
@@ -29,9 +26,6 @@ func main() {
 		data, _, _ := reader.ReadLine()
 		///执行自定义的cmd命令
 		switch command := string(data); command {
-		case "nsq":
-			StartNsq()
-			running = false
 		case "http":
 			StartHttpServer()
 			running = false
@@ -39,17 +33,6 @@ func main() {
 			fmt.Printf("错误指令，请重新输入：\n")
 		}
 	}
-}
-
-///nsq客户端服务
-func StartNsq() {
-	nci := models.Messages{
-		Topic:   "test",
-		Channel: "Eason",
-		UserID:  "00001",
-	}
-	constr := "nsq-ttthzygi35.tenxcloud.net:40255"
-	lib.Connect_Nsq(constr, nci)
 }
 
 ///http服务器
@@ -68,11 +51,11 @@ func StartHttpServer() {
 
 	///API接口路由
 	http.HandleFunc("/SendMsg/", controller.PostMsgHandler)
-	http.HandleFunc("/GetMsg/", controller.GetMsgHandler)
+	http.HandleFunc("/GetMsgDB/", controller.GetMsgForMongoDBHandler)
 
 	http.HandleFunc("/ReceiveMsg/", controller.RevMsgHandler)
 	http.HandleFunc("/ConMsq/", controller.ConMsqHandler)
-	http.HandleFunc("/InfoMsq/", controller.InfoMsqHandler)
+	http.HandleFunc("/StopConsumer/", controller.StopConsumerHandler)
 
 	//http.ListenAndServe(":8080", nil)
 	///启动监听服务

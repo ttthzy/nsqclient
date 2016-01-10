@@ -7,14 +7,19 @@ import (
 	"nsqclient/lib"
 	"nsqclient/models"
 	"strconv"
+	"time"
 
 	"github.com/pquerna/ffjson/ffjson"
+	//"github.com/gorilla/sessions"
 )
 
 var (
 	conadd1 = "nsq-ttthzygi35.tenxcloud.net:40255"
 	conadd2 = "120.24.210.90:4150"
 )
+
+///声明一个session仓库
+//var store = sessions.NewCookieStore([]byte("something-very-secret"))
 
 ///连接nsq
 func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,21 +38,55 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 	channel := param2[0]
 	userid := param3[0]
 
-	nci := models.Messages{
+	ud := models.UserDynamic{
 		Topic:   topic,
 		Channel: channel,
 		UserID:  userid,
 	}
 
-	go lib.Connect_Nsq(conadd1, nci)
+	ret := lib.Connect_Nsq(conadd1, ud)
+
+	io.WriteString(w, ret)
 
 }
 
-///nsqInfo
-func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
-	h := lib.HH
+///stopConsumer
+func StopConsumerHandler(w http.ResponseWriter, r *http.Request) {
 
-	io.WriteString(w, h.Nci.UserID)
+	r.ParseForm()
+	param1, found1 := r.Form["userid"]
+	param2, found2 := r.Form["hostid"]
+
+	if !found1 || !found2 {
+		io.WriteString(w, "请勿非法访问")
+		return
+	}
+
+	userid := param1[0]
+	hostid := param2[0]
+
+	///更新用户状态
+	// query := bson.M{"userid": userid, "hostid": hostid}
+	// change := bson.M{"$set": bson.M{"isonline": false}}
+	// var ret string
+	// if models.UpdateUserDynamic(query, change) {
+	// 	ret = "update ok"
+	// } else {
+	// 	ret = "update fial"
+	// }
+
+	///记录用户状态
+	ud := models.UserDynamic{
+		Topic:      lib.UD.Topic,
+		Channel:    lib.UD.Channel,
+		UserID:     userid,
+		HostID:     hostid,
+		IsOnline:   false,
+		CreateDate: time.Now(),
+	}
+	ret := models.AddUserDynamic(ud)
+
+	io.WriteString(w, ret)
 
 }
 
@@ -94,32 +133,41 @@ func PostMsgHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 ///从数据库pull消息
-func GetMsgHandler(w http.ResponseWriter, req *http.Request) {
+func GetMsgForMongoDBHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+
 	//获取客户端通过GET/POST方式传递的参数
 	var retmsg string
 	req.ParseForm()
 	param1, found1 := req.Form["topic"]
-	param2, _ := req.Form["limit"]
+	param2, _ := req.Form["sort"]
+	param3, _ := req.Form["limit"]
 
 	if !found1 {
 		retmsg = "请勿非法访问"
 	}
 
 	topic := param1[0]
-	limit, err := strconv.Atoi(param2[0])
+	sort := param2[0]
+	limit, err := strconv.Atoi(param3[0])
 	if err != nil {
 		retmsg = "请勿非法访问"
 	}
 
 	if topic != "" {
-
-		dblist := models.GetMessagesForField("topic", topic, limit)
+		selectM := make(map[string]interface{})
+		selectM["topic"] = topic
+		selectM["isdel"] = false
+		dblist := models.GetMessagesForField(selectM, sort, limit)
 		msgjson, _ := ffjson.Marshal(dblist)
 		retmsg = string(msgjson)
 	} else {
 
 		retmsg = "topic is null"
 	}
-	io.WriteString(w, retmsg)
+
+	msg := "data:" + retmsg + "\n\n"
+	io.WriteString(w, msg)
 
 }
