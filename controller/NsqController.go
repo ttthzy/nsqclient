@@ -38,7 +38,7 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 	channel := param2[0]
 	userid := param3[0]
 
-	ud := models.UserDynamic{
+	ud := models.UserConsumer{
 		Topic:   topic,
 		Channel: channel,
 		UserID:  userid,
@@ -69,14 +69,14 @@ func StopConsumerHandler(w http.ResponseWriter, r *http.Request) {
 	// query := bson.M{"userid": userid, "hostid": hostid}
 	// change := bson.M{"$set": bson.M{"isonline": false}}
 	// var ret string
-	// if models.UpdateUserDynamic(query, change) {
+	// if models.UpdateUserConsumer(query, change) {
 	// 	ret = "update ok"
 	// } else {
 	// 	ret = "update fial"
 	// }
 
 	///记录用户状态
-	ud := models.UserDynamic{
+	ud := models.UserConsumer{
 		Topic:      lib.UD.Topic,
 		Channel:    lib.UD.Channel,
 		UserID:     userid,
@@ -84,7 +84,7 @@ func StopConsumerHandler(w http.ResponseWriter, r *http.Request) {
 		IsOnline:   false,
 		CreateDate: time.Now(),
 	}
-	ret := models.AddUserDynamic(ud)
+	ret := models.AddUserConsumer(ud)
 
 	io.WriteString(w, ret)
 

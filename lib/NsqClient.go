@@ -23,7 +23,7 @@ type Handle struct {
 
 ///推送返回的消息体
 var RevMsg map[string]interface{} = make(map[string]interface{})
-var UD models.UserDynamic
+var UD models.UserConsumer
 
 func (h *Handle) HandleMsg(m *nsq.Message) error {
 	if !h.ChanSwitch {
@@ -59,7 +59,7 @@ func (h *Handle) Stop() {
 	close(h.Msgchan)
 }
 
-func Connect_Nsq(constr string, ud models.UserDynamic) string {
+func Connect_Nsq(constr string, ud models.UserConsumer) string {
 	config := nsq.NewConfig()
 
 	if GetUserNsqState(ud.UserID, config.ClientID) {
@@ -84,7 +84,7 @@ func Connect_Nsq(constr string, ud models.UserDynamic) string {
 	ud.HostID = config.ClientID
 	ud.IsOnline = true
 
-	consumerid := models.AddUserDynamic(ud)
+	consumerid := models.AddUserConsumer(ud)
 
 	h.Nci = models.Messages{
 		ConsumerID: consumerid,
@@ -144,7 +144,7 @@ func (h *Handle) ReceiveMessage() {
 
 ///查询并返回用户nsq登录状态
 func GetUserNsqState(userid, hostid string) bool {
-	udb := models.GetUserDynamicByhostid(userid, hostid)
+	udb := models.GetUserConsumerByhostid(userid, hostid)
 	return udb.IsOnline
 }
 
