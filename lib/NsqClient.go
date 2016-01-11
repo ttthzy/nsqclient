@@ -23,10 +23,6 @@ type Handle struct {
 ///推送返回的消息体
 var RevMsg map[string]interface{} = make(map[string]interface{})
 
-///已登录的消费者列表
-var ConsumerList map[string]models.UserConsumer = make(map[string]models.UserConsumer)
-var ConsumerID string
-
 func (h *Handle) HandleMsg(m *nsq.Message) error {
 	if !h.ChanSwitch {
 		h.Msgchan <- m
