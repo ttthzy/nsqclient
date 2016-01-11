@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lvanneo/llog/llogger"
 	"github.com/nsqio/go-nsq"
 )
 
@@ -23,7 +22,10 @@ type Handle struct {
 
 ///推送返回的消息体
 var RevMsg map[string]interface{} = make(map[string]interface{})
-var UD models.UserConsumer
+
+///已登录的消费者列表
+var ConsumerList map[string]models.UserConsumer = make(map[string]models.UserConsumer)
+var ConsumerID string
 
 func (h *Handle) HandleMsg(m *nsq.Message) error {
 	if !h.ChanSwitch {
@@ -59,15 +61,30 @@ func (h *Handle) Stop() {
 	close(h.Msgchan)
 }
 
-func Connect_Nsq(constr string, ud models.UserConsumer) string {
+func Connect_Nsq(constr, cid string, ud models.UserConsumer) string {
 	config := nsq.NewConfig()
 
-	if GetUserNsqState(ud.UserID, config.ClientID) {
-		return "connected"
+	///判断用户是否已存在消费者列表(DB)里，如果存在则不继续
+	ok, id := GetUserOnlineState(ud.UserID, config.ClientID)
+	if ok {
+		return id
 	}
+
+	///记录用户状态
+	ud.CreateDate = time.Now()
+	ud.HostID = config.ClientID
+	ud.IsOnline = true
+
+	///消费者登录状态写入数据库
+	ConsumerID := models.AddUserConsumer(ud)
+
+	if ConsumerID == "" {
+		return "err"
+	}
+
 	consumer, err := nsq.NewConsumer(ud.Topic, ud.Channel, config)
 	if err != nil {
-		return err.Error()
+		return "err"
 	}
 
 	h := new(Handle)
@@ -76,25 +93,17 @@ func Connect_Nsq(constr string, ud models.UserConsumer) string {
 	h.Msgchan = make(chan *nsq.Message, 1024)
 	err = consumer.ConnectToNSQD(constr)
 	if err != nil {
-		return err.Error()
+		return "err"
 	}
-
-	///记录用户状态
-	ud.CreateDate = time.Now()
-	ud.HostID = config.ClientID
-	ud.IsOnline = true
-
-	consumerid := models.AddUserConsumer(ud)
 
 	h.Nci = models.Messages{
-		ConsumerID: consumerid,
+		ConsumerID: ConsumerID,
 	}
 
-	UD = ud
 	go StopConsumer(consumer, ud.UserID, config.ClientID)
-	h.Process()
+	go h.Process()
 
-	return config.ClientID
+	return ConsumerID
 
 }
 
@@ -102,12 +111,9 @@ func StopConsumer(consumer *nsq.Consumer, UserID, ClientID string) {
 	limiter := time.Tick(10 * time.Second) //设置for循环间隔时间 10秒
 	for {
 		<-limiter
-		if !GetUserNsqState(UserID, ClientID) {
-			llogger.Info(ClientID + ":stop")
+		if ok, _ := GetUserOnlineState(UserID, ClientID); !ok {
 			consumer.Stop()
 			break
-		} else {
-			llogger.Info(ClientID + ":runing")
 		}
 	}
 }
@@ -116,18 +122,6 @@ func StopConsumer(consumer *nsq.Consumer, UserID, ClientID string) {
 func (h *Handle) ReceiveMessage() {
 	h.Nci.Message = DecodeStr(h.Nci.Message)
 	h.Nci.SendDate = time.Now()
-	if h.Nci.MessageID == "" {
-		return
-	}
-	if h.Nci.MessageID == "undefined" {
-		return
-	}
-	if h.Nci.Message == "" {
-		return
-	}
-	if h.Nci.Message == "undefined" {
-		return
-	}
 
 	wtime := h.Nci.SendDate.Format("2006-01-02 15:04:05")
 	//llogger.Info(message)
@@ -143,9 +137,9 @@ func (h *Handle) ReceiveMessage() {
 }
 
 ///查询并返回用户nsq登录状态
-func GetUserNsqState(userid, hostid string) bool {
+func GetUserOnlineState(userid, hostid string) (bool, string) {
 	udb := models.GetUserConsumerByhostid(userid, hostid)
-	return udb.IsOnline
+	return udb.IsOnline, udb.Id.Hex()
 }
 
 ///向nsq服务器推送一条消息

@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"io"
 	"io/ioutil"
+	"net/http"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
@@ -46,4 +47,17 @@ func DecodeStr(src string) (dst string) {
 		dst = string(data)
 	}
 	return
+}
+
+///获取url参数
+func GetUrlValue(req *http.Request) map[string]string {
+	values := make(map[string]string)
+	req.ParseForm()
+	if len(req.Form) > 0 {
+		for k, v := range req.Form {
+			values[k] = v[0]
+		}
+	}
+
+	return values
 }

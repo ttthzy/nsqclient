@@ -7,7 +7,6 @@ import (
 	"nsqclient/lib"
 	"nsqclient/models"
 	"strconv"
-	"time"
 
 	"github.com/pquerna/ffjson/ffjson"
 	//"github.com/gorilla/sessions"
@@ -23,28 +22,15 @@ var (
 
 ///连接nsq
 func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
-
-	r.ParseForm()
-	param1, found1 := r.Form["topic"]
-	param2, found2 := r.Form["channel"]
-	param3, found3 := r.Form["userid"]
-
-	if !found1 || !found2 || !found3 {
-		io.WriteString(w, "请勿非法访问")
-		return
-	}
-
-	topic := param1[0]
-	channel := param2[0]
-	userid := param3[0]
+	values := lib.GetUrlValue(r)
 
 	ud := models.UserConsumer{
-		Topic:   topic,
-		Channel: channel,
-		UserID:  userid,
+		Topic:   values["topic"],
+		Channel: values["channel"],
+		UserID:  values["userid"],
 	}
 
-	ret := lib.Connect_Nsq(conadd1, ud)
+	ret := lib.Connect_Nsq(conadd1, values["consumerid"], ud)
 
 	io.WriteString(w, ret)
 
@@ -52,39 +38,16 @@ func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
 
 ///stopConsumer
 func StopConsumerHandler(w http.ResponseWriter, r *http.Request) {
-
-	r.ParseForm()
-	param1, found1 := r.Form["userid"]
-	param2, found2 := r.Form["hostid"]
-
-	if !found1 || !found2 {
-		io.WriteString(w, "请勿非法访问")
-		return
-	}
-
-	userid := param1[0]
-	hostid := param2[0]
+	values := lib.GetUrlValue(r)
 
 	///更新用户状态
-	// query := bson.M{"userid": userid, "hostid": hostid}
-	// change := bson.M{"$set": bson.M{"isonline": false}}
-	// var ret string
-	// if models.UpdateUserConsumer(query, change) {
-	// 	ret = "update ok"
-	// } else {
-	// 	ret = "update fial"
-	// }
 
-	///记录用户状态
-	ud := models.UserConsumer{
-		Topic:      lib.UD.Topic,
-		Channel:    lib.UD.Channel,
-		UserID:     userid,
-		HostID:     hostid,
-		IsOnline:   false,
-		CreateDate: time.Now(),
+	var ret string
+	if models.SetUserOnlineState(values["consumerid"], false) {
+		ret = "stop ok" + values["consumerid"]
+	} else {
+		ret = "stop fial" + values["consumerid"]
 	}
-	ret := models.AddUserConsumer(ud)
 
 	io.WriteString(w, ret)
 

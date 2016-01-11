@@ -8,11 +8,13 @@ var BindHtml = {
       source.onmessage = function(event) {
         // document.getElementById("result").innerHTML+=event.data + "<br />";
         // return;
+        var jsondata = JSON.parse(event.data);
+
         if (pageid == "home") {
-          BindHtml.getMsg(event.data)
+          BindHtml.getMsg(jsondata)
         }
         if (pageid == "index") {
-          BindHtml.getBarrageMsg(event.data)
+          BindHtml.getBarrageMsg(jsondata)
         }
 
 
@@ -28,12 +30,19 @@ var BindHtml = {
       url: "ConMsq/",
       type: 'GET',
       data: {
+        consumerid:localStorage["consumerid"],
         topic: topic,
         channel: channel,
         userid: userid
       },
       success: function(data) {
-          console.log("conNsq"+data);
+          if(data == "err"){
+            console.log("conNsq no:"+data);
+            return;
+          }else{
+            localStorage["consumerid"] = data;
+            console.log("conNsq id:"+data);
+          }
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         console.log("conNsq err" + XMLHttpRequest.status);
@@ -98,8 +107,7 @@ var BindHtml = {
         sort: "-senddate",
         limit: 10
       },
-      success: function(data) {
-        var jsondata = JSON.parse(data);
+      success: function(jsondata) {
         console.log(jsondata);
       },
       error: function(data) {
@@ -107,22 +115,15 @@ var BindHtml = {
       },
     });
   },
-  getMsg: function(data) {
-
-    if (jsondata != "undefined") {
-      var jsondata = JSON.parse(data);
+  getMsg: function(jsondata) {
       var li = $("#ul_msg li[id='msgid" + jsondata.MssageID + "']").val();
       if (typeof(li) == "undefined") {
         $("#ul_msg").append("<li id='msgid" + jsondata.MssageID + "'>" + jsondata.Mssage + "</li>");
       }
-    }
-
-
   },
-  getBarrageMsg: function(data) {
-    if (jsondata != "undefined") {
-      var jsondata = JSON.parse(data);
-      var jsondata = {
+  getBarrageMsg: function(jsondata) {
+
+      var data = {
         id: jsondata.MssageID,
         text: jsondata.Mssage,
         color: "#6f9",
@@ -130,16 +131,15 @@ var BindHtml = {
         shadow: true
       };
 
-      damoo.emit(jsondata);
-    }
+      damoo.emit(data);
+
   },
-  pageOut: function(userid, hostid) {
+  pageOut: function() {
     $.ajax({
       url: "/StopConsumer/",
       type: 'GET',
       data: {
-        userid: userid,
-        hostid: hostid
+        consumerid: localStorage["consumerid"]
       },
       success: function(data) {
         console.log(data);

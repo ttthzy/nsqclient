@@ -9,10 +9,10 @@ import (
 
 type Messages struct {
 	Id         bson.ObjectId `bson:"_id"`
+	ConsumerID string        `bson:"consumerid"` //
+	MessageID  string        `bson:"messageid"`  //
 	Message    string        `bson:"message"`    //
 	SendDate   time.Time     `bson:"senddate"`   //
-	ConsumerID string        `bson:"Consumerid"` //
-	MessageID  string        `bson:"messageid"`  //
 	IsDel      bool          `bson:"isdel"`      //
 }
 

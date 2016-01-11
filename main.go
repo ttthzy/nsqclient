@@ -1,6 +1,9 @@
 package main
 
-import "nsqclient/controller"
+import (
+	"nsqclient/controller"
+	"nsqclient/models"
+)
 
 import (
 	"bufio"
@@ -14,6 +17,7 @@ import (
 
 func main() {
 	//StartNsq()
+	models.InitUserConsumer()
 	StartHttpServer()
 
 	//test-123
