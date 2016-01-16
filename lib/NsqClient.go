@@ -61,10 +61,10 @@ func Connect_Nsq(constr, cid string, ud models.UserConsumer) string {
 	config := nsq.NewConfig()
 
 	///判断用户是否已存在消费者列表(DB)里，如果存在则不继续
-	ok, id := GetUserOnlineState(ud.UserID, config.ClientID)
-	if ok {
-		return id
-	}
+	// ok, id := GetUserOnlineState(ud.UserID, config.ClientID)
+	// if ok {
+	// 	return id
+	// }
 
 	///记录用户状态
 	ud.CreateDate = time.Now()

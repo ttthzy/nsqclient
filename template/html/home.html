@@ -11,8 +11,16 @@
     <script src="js/react/0.13.0/JSXTransformer.js"></script> -->
   <script src="js/nsqc.js?v=0.1" charset="utf-8"></script>
   <script charset="utf-8">
+
+  document.addEventListener("DOMContentLoaded", function() {
+             // declare localized references
+            BindHtml.init("home");
+
+        }, false);
+
+
     $(function() {
-      BindHtml.init("home");
+      //BindHtml.init("home");
     });
 
     ///绑定beforeunload事件，监测用户离开页面行为

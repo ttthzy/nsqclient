@@ -60,7 +60,10 @@ func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	//
 
 	bytes, _ := ffjson.Marshal(lib.RevMsg)
-	msg := "data:" + string(bytes) + "\n\n"
+	mtype := "\r\n\r\n"
+	msg := "data:" + string(bytes) + mtype
+
+
 	io.WriteString(w, msg)
 
 }
