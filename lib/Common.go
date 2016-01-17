@@ -61,3 +61,23 @@ func GetUrlValue(req *http.Request) map[string]string {
 
 	return values
 }
+
+
+//实现 try catch
+func Try(fun func(), handler func(interface{})) {
+    defer func() {
+        if err := recover(); err != nil {
+            handler(err)
+        }
+    }()
+    fun()
+}
+
+///demo
+// func testTry() {
+//     Try(func() {
+//        panic("foo")
+//     }, func(e interface{}) {
+//        print(e)
+//     })
+// }
