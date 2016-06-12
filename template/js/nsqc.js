@@ -1,17 +1,20 @@
 var BindHtml = {
   init: function(pageid) {
-    BindHtml.conNsq();
+    BindHtml.conNsq("test", "9527", "18321421187");
 
     if (typeof(EventSource) !== "undefined") {
-      var source = new EventSource("ReceiveMsg"); //sendMessage后台的访问路径
+      var source = new EventSource("ReceiveMsg"); //从服务器内存取
+      //var source = new EventSource("GetMsgDB/?topic='test'&sort='-senddate'&limit=10"); //从数据库取
       source.onmessage = function(event) {
         // document.getElementById("result").innerHTML+=event.data + "<br />";
         // return;
+        var jsondata = JSON.parse(event.data);
+
         if (pageid == "home") {
-          BindHtml.getMsg(event.data)
+          BindHtml.getMsg(jsondata)
         }
         if (pageid == "index") {
-          BindHtml.getBarrageMsg(event.data)
+          BindHtml.getBarrageMsg(jsondata)
         }
 
 
@@ -21,22 +24,25 @@ var BindHtml = {
     }
   },
 
-  conNsq: function() {
-    var topic = $("#iptTopic").val();
-    var channel = $("#iptChannel").val();
-    var userid = $("#iptUserid").val();
+  conNsq: function(topic, channel, userid) {
 
     $.ajax({
       url: "ConMsq/",
       type: 'GET',
       data: {
+        consumerid:localStorage["consumerid"],
         topic: topic,
         channel: channel,
         userid: userid
       },
       success: function(data) {
-        console.log("conNsq success" + data);
-        return;
+          if(data == "err"){
+            console.log("conNsq no:"+data);
+            return;
+          }else{
+            localStorage["consumerid"] = data;
+            console.log("conNsq id:"+data);
+          }
       },
       error: function(XMLHttpRequest, textStatus, errorThrown) {
         console.log("conNsq err" + XMLHttpRequest.status);
@@ -92,22 +98,32 @@ var BindHtml = {
       },
     });
   },
-  getMsg: function(data) {
-
-    if (jsondata != "undefined") {
-      var jsondata = JSON.parse(data);
+  getMsgDB: function(topic) {
+    $.ajax({
+      url: "/GetMsgDB/",
+      type: 'GET',
+      data: {
+        topic: topic,
+        sort: "-senddate",
+        limit: 10
+      },
+      success: function(jsondata) {
+        console.log(jsondata);
+      },
+      error: function(data) {
+        console.log(data);
+      },
+    });
+  },
+  getMsg: function(jsondata) {
       var li = $("#ul_msg li[id='msgid" + jsondata.MssageID + "']").val();
       if (typeof(li) == "undefined") {
         $("#ul_msg").append("<li id='msgid" + jsondata.MssageID + "'>" + jsondata.Mssage + "</li>");
       }
-    }
-
-
   },
-  getBarrageMsg: function(data) {
+  getBarrageMsg: function(jsondata) {
 
-    if (jsondata != "undefined") {
-      var jsondata = {
+      var data = {
         id: jsondata.MssageID,
         text: jsondata.Mssage,
         color: "#6f9",
@@ -115,11 +131,25 @@ var BindHtml = {
         shadow: true
       };
 
-      damoo.emit(jsondata);
-    }
+      damoo.emit(data);
 
-
-
-
+  },
+  pageOut: function() {
+    $.ajax({
+      url: "/StopConsumer/",
+      type: 'GET',
+      data: {
+        consumerid: localStorage["consumerid"]
+      },
+      success: function(data) {
+        console.log(data);
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        console.log("pageOut err" + XMLHttpRequest.status);
+        console.log("pageOut err" + XMLHttpRequest.readyState);
+        console.log("pageOut err" + textStatus);
+        return;
+      },
+    });
   }
 }

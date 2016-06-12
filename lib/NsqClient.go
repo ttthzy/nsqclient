@@ -21,10 +21,7 @@ type Handle struct {
 }
 
 ///推送返回的消息体
-//var RevMsg [2]string
-var RevMsg map[string]string = make(map[string]string)
-
-var HH *Handle
+var RevMsg map[string]interface{} = make(map[string]interface{})
 
 func (h *Handle) HandleMsg(m *nsq.Message) error {
 	if !h.ChanSwitch {
@@ -43,13 +40,14 @@ func (h *Handle) Process() {
 			h.Nci.Message = string(m.Body)
 			h.Nci.MessageID = string(m.ID[:])
 			h.ReceiveMessage()
-		case <-time.After(time.Second):
+		case <-time.After(2 * time.Second):
 			if h.ChanSwitch {
 				close(h.Msgchan)
-				HH = nil
-				fmt.Println("关闭了")
+				fmt.Println("超时")
 				return
 			}
+			// default:
+			// 	return
 		}
 	}
 }
@@ -57,70 +55,87 @@ func (h *Handle) Process() {
 func (h *Handle) Stop() {
 	h.ChanSwitch = true
 	close(h.Msgchan)
-	HH = nil
 }
 
-func (h *Handle) SetHH() {
-	HH = h
-}
-
-func Connect_Nsq(constr string, nci models.Messages) {
-
-	// if HH.Nci.ClientID != "" {
-	// 	return
-	// }
-
+func Connect_Nsq(constr, cid string, ud models.UserConsumer) string {
 	config := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(nci.Topic, nci.Channel, config)
-	if err != nil {
-		//panic(err)
-		return
+	///判断用户是否已存在消费者列表(DB)里，如果存在则不继续
+	// ok, id := GetUserOnlineState(ud.UserID, config.ClientID)
+	// if ok {
+	// 	return id
+	// }
+
+	///记录用户状态
+	ud.CreateDate = time.Now()
+	ud.HostID = config.ClientID
+	ud.IsOnline = true
+
+	///消费者登录状态写入数据库
+	ConsumerID := models.AddUserConsumer(ud)
+
+	if ConsumerID == "" {
+		return "err"
 	}
+
+	consumer, err := nsq.NewConsumer(ud.Topic, ud.Channel, config)
+	if err != nil {
+		return "err"
+	}
+
 	h := new(Handle)
 	consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
+
 	h.Msgchan = make(chan *nsq.Message, 1024)
 	err = consumer.ConnectToNSQD(constr)
 	if err != nil {
-		return
-		//这里需要加一个循环计次的逻辑处理，？次以后不再尝试连接。
-		//fmt.Println("连接服务器失败，尝试再次连接中...")
-		//Connect_Nsq(constr, nci)
+		return "err"
 	}
 
-	nci.ClientID = config.ClientID
-	nci.UserID = GetGuid()
-	h.Nci = nci
-	h.SetHH()
-	h.Process()
+	h.Nci = models.Messages{
+		ConsumerID: ConsumerID,
+	}
+
+	go StopConsumer(consumer, ud.UserID, config.ClientID)
+	go h.Process()
+
+	return ConsumerID
+
+}
+
+func StopConsumer(consumer *nsq.Consumer, UserID, ClientID string) {
+	limiter := time.Tick(10 * time.Second) //设置for循环间隔时间 10秒
+	for {
+		<-limiter
+		if ok, _ := GetUserOnlineState(UserID, ClientID); !ok {
+			consumer.Stop()
+			break
+		}
+	}
 }
 
 ///接收channel消息并处理
 func (h *Handle) ReceiveMessage() {
-	msg := DecodeStr(h.Nci.Message)
+	h.Nci.Message = DecodeStr(h.Nci.Message)
+	h.Nci.SendDate = time.Now()
+
+	wtime := h.Nci.SendDate.Format("2006-01-02 15:04:05")
 	//llogger.Info(message)
-	fmt.Println("Message：" + msg)
+	fmt.Println("Message："+h.Nci.Message, "(", wtime, ")")
 
-	//ret := models.AddMessages(h.nci)
+	models.AddMessages(h.Nci)
 
-	if h.Nci.MessageID == "" {
-		return
-	}
-	if h.Nci.MessageID == "undefined" {
-		return
-	}
-	if msg == "" {
-		return
-	}
-	if msg == "undefined" {
-		return
-	}
-
-	RevMsg["UserID"] = h.Nci.UserID
+	RevMsg["ConsumerID"] = h.Nci.ConsumerID
 	RevMsg["MssageID"] = h.Nci.MessageID
-	RevMsg["Mssage"] = msg
-	RevMsg["DateTime"] = time.Now().String()
+	RevMsg["Mssage"] = h.Nci.Message
+	RevMsg["DateTime"] = wtime
 
+}
+
+///查询并返回用户nsq登录状态
+func GetUserOnlineState(userid, hostid string) (bool, string) {
+	udb := models.GetUserConsumerByhostid(userid, hostid)
+	return udb.IsOnline, udb.Id.Hex()
 }
 
 ///向nsq服务器推送一条消息

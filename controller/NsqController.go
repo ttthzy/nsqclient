@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/pquerna/ffjson/ffjson"
+	//"github.com/gorilla/sessions"
 )
 
 var (
@@ -16,38 +17,39 @@ var (
 	conadd2 = "120.24.210.90:4150"
 )
 
+///声明一个session仓库
+//var store = sessions.NewCookieStore([]byte("something-very-secret"))
+
 ///连接nsq
 func ConMsqHandler(w http.ResponseWriter, r *http.Request) {
+	values := lib.GetUrlValue(r)
 
-	r.ParseForm()
-	param1, found1 := r.Form["topic"]
-	param2, found2 := r.Form["channel"]
-	param3, found3 := r.Form["userid"]
-
-	if !found1 || !found2 || !found3 {
-		io.WriteString(w, "请勿非法访问")
-		return
+	ud := models.UserConsumer{
+		Topic:   values["topic"],
+		Channel: values["channel"],
+		UserID:  values["userid"],
 	}
 
-	topic := param1[0]
-	channel := param2[0]
-	userid := param3[0]
+	ret := lib.Connect_Nsq(conadd1, values["consumerid"], ud)
 
-	nci := models.Messages{
-		Topic:   topic,
-		Channel: channel,
-		UserID:  userid,
-	}
-
-	go lib.Connect_Nsq(conadd1, nci)
+	io.WriteString(w, ret)
 
 }
 
-///nsqInfo
-func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
-	h := lib.HH
+///stopConsumer
+func StopConsumerHandler(w http.ResponseWriter, r *http.Request) {
+	values := lib.GetUrlValue(r)
 
-	io.WriteString(w, h.Nci.UserID)
+	///更新用户状态
+
+	var ret string
+	if models.SetUserOnlineState(values["consumerid"], false) {
+		ret = "stop ok" + values["consumerid"]
+	} else {
+		ret = "stop fial" + values["consumerid"]
+	}
+
+	io.WriteString(w, ret)
 
 }
 
@@ -55,15 +57,13 @@ func InfoMsqHandler(w http.ResponseWriter, r *http.Request) {
 func RevMsgHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
-	
-    fileHelper:=new(lib.FileHelper)
-    data,err:=fileHelper.ReadFile("./nsqconsumer/data.txt")
-    
-    if err!=nil{
-        data="data load failed"
-    }
-    
-    msg:= "data:" +data + "\n\n"
+	//
+
+	bytes, _ := ffjson.Marshal(lib.RevMsg)
+	mtype := "\r\n\r\n"
+	msg := "data:" + string(bytes) + mtype
+
+
 	io.WriteString(w, msg)
 
 }
@@ -99,32 +99,41 @@ func PostMsgHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 ///从数据库pull消息
-func GetMsgHandler(w http.ResponseWriter, req *http.Request) {
+func GetMsgForMongoDBHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+
 	//获取客户端通过GET/POST方式传递的参数
 	var retmsg string
 	req.ParseForm()
 	param1, found1 := req.Form["topic"]
-	param2, _ := req.Form["limit"]
+	param2, _ := req.Form["sort"]
+	param3, _ := req.Form["limit"]
 
 	if !found1 {
 		retmsg = "请勿非法访问"
 	}
 
 	topic := param1[0]
-	limit, err := strconv.Atoi(param2[0])
+	sort := param2[0]
+	limit, err := strconv.Atoi(param3[0])
 	if err != nil {
 		retmsg = "请勿非法访问"
 	}
 
 	if topic != "" {
-
-		dblist := models.GetMessagesForField("topic", topic, limit)
+		selectM := make(map[string]interface{})
+		selectM["topic"] = topic
+		selectM["isdel"] = false
+		dblist := models.GetMessagesForField(selectM, sort, limit)
 		msgjson, _ := ffjson.Marshal(dblist)
 		retmsg = string(msgjson)
 	} else {
 
 		retmsg = "topic is null"
 	}
-	io.WriteString(w, retmsg)
+
+	msg := "data:" + retmsg + "\n\n"
+	io.WriteString(w, msg)
 
 }
